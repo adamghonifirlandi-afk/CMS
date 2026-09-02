@@ -1,3 +1,4 @@
+import dotenv from "dotenv";
 import {
   PrismaClient,
   ProjectRole,
@@ -6,6 +7,8 @@ import {
   Status,
 } from "../src/generated";
 import bcrypt from "bcrypt";
+
+dotenv.config();
 
 const prisma = new PrismaClient();
 
