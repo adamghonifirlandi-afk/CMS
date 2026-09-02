@@ -4,15 +4,17 @@ WORKDIR /app
 
 COPY package*.json ./
 COPY prisma ./prisma/
+COPY tsconfig.json ./
+COPY tsconfig.seed.json ./
+COPY scripts ./scripts/
 
 RUN npm ci
 
-COPY tsconfig.json ./
 COPY src ./src/
-COPY scripts ./scripts/
 
 RUN npx prisma generate
 RUN npm run build
+
 
 FROM node:20-alpine AS runner
 
@@ -26,7 +28,7 @@ COPY prisma ./prisma/
 RUN npm ci --omit=dev
 
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/dist/generated ./dist/generated
+COPY --from=builder /app/dist-seed ./dist-seed
 
 EXPOSE 8080
 

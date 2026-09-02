@@ -5,7 +5,7 @@ import {
   ProjectStatus,
   Role,
   Status,
-} from "../src/generated";
+} from "../dist/generated";
 import bcrypt from "bcrypt";
 
 dotenv.config();
@@ -428,3 +428,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
