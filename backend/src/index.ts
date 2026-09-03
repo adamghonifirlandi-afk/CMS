@@ -27,11 +27,17 @@ import { errorHandler } from "./middlewares/errorHandler";
 
 const app = express();
 
-const defaultOrigins = ["http://localhost:3000"];
-const allowedOrigins = (process.env.FRONTEND_URL || defaultOrigins.join(","))
+const defaultOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3010",
+  "http://localhost:3010",
+  "https://cms-theta-three-34.vercel.app",
+];
+const configuredOrigins = (process.env.FRONTEND_URL || "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+const allowedOrigins = [...new Set([...defaultOrigins, ...configuredOrigins])];
 
 app.use(
   cors({

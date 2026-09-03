@@ -46,16 +46,16 @@ export function DashboardTopbar() {
     : "Dashboard";
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-4 border-b border-border/40 px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-3 border-b border-border/80 bg-background/85 px-4 backdrop-blur-xl sm:gap-4 sm:px-6">
       <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground" />
       <Separator orientation="vertical" className="h-4" />
       
-      <div className="flex items-center gap-2 mr-4">
+      <div className="flex items-center gap-2 sm:mr-2">
         <ProjectSelector />
       </div>
 
-      <div className="hidden md:flex items-center text-sm text-muted-foreground gap-2">
-        <span>CMS</span>
+      <div className="hidden lg:flex items-center text-xs text-muted-foreground gap-2">
+        <span className="font-medium text-foreground">Workspace</span>
         <ChevronRight className="w-4 h-4" />
         {activeProject ? (
           <>
@@ -69,25 +69,25 @@ export function DashboardTopbar() {
       <div className="flex-1" />
 
       {/* Global Search Mock */}
-      <Button variant="outline" className="hidden md:flex relative h-8 w-64 justify-start rounded-[0.5rem] bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-40 lg:w-64">
+      <Button variant="outline" className="hidden md:flex relative h-9 w-56 justify-start rounded-xl bg-muted/40 text-sm font-normal text-muted-foreground shadow-none lg:w-64">
         <span className="hidden lg:inline-flex">Cari sesuatu...</span>
         <span className="inline-flex lg:hidden">Cari...</span>
         <kbd className="pointer-events-none absolute right-[0.3rem] top-[0.3rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-          <span className="text-xs">⌘</span>K
+          <span className="text-xs">Ctrl</span>K
         </kbd>
       </Button>
 
       <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
         <Bell className="w-4 h-4" />
-        <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-violet-500 rounded-full"></span>
+        <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary"></span>
       </Button>
 
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
             <button className="relative h-8 w-8 rounded-full overflow-hidden outline-none hover:ring-2 hover:ring-violet-500/50 transition-all">
-              <Avatar className="h-8 w-8 border border-border">
-                <AvatarFallback className="bg-violet-600 text-white text-xs">
+              <Avatar className="h-8 w-8 border border-primary/30">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                   {initials}
                 </AvatarFallback>
               </Avatar>

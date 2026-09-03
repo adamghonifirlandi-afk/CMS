@@ -38,7 +38,7 @@ export default function DashboardLayout({
         <AppSidebar />
         <SidebarInset>
           <DashboardTopbar />
-          <main className="flex-1 p-6 overflow-auto">{children}</main>
+          <main className="flex-1 overflow-auto px-4 py-5 sm:px-6 sm:py-7 lg:px-8">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </ActiveProjectProvider>

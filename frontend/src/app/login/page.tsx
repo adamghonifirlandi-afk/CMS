@@ -41,55 +41,50 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen bg-background lg:grid lg:grid-cols-[1.1fr_0.9fr]">
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-violet-600 via-indigo-700 to-blue-800 relative overflow-hidden">
+      <div className="surface-grid relative hidden overflow-hidden border-r border-border/80 bg-card/50 lg:flex">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0aDR2NEgzNnpNMjAgMjBoNHY0SDIweiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
-        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
+        <div className="relative z-10 flex flex-col justify-center px-16 text-foreground xl:px-24">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-[0_0_24px_oklch(0.78_0.15_174_/_0.22)]">
               <Layers className="w-7 h-7" />
             </div>
-            <span className="text-2xl font-bold tracking-tight">Headless CMS</span>
+            <span className="text-xl font-semibold tracking-tight">Northstar CMS</span>
           </div>
-          <h1 className="text-4xl font-bold mb-4 leading-tight">
-            Kelola konten digital<br />Anda dengan mudah
+          <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight">
+            Your content,<br />in motion.
           </h1>
-          <p className="text-lg text-white/70 max-w-md">
-            Platform CMS modern yang membantu Anda mengelola konten, proyek, dan tim secara efisien.
+          <p className="max-w-md text-base leading-7 text-muted-foreground">
+            Shape structured content, ship across channels, and keep every team aligned from one calm workspace.
           </p>
-          <div className="mt-12 grid grid-cols-3 gap-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold">100+</div>
-              <div className="text-sm text-white/60">Content Types</div>
+          <div className="mt-12 grid max-w-lg grid-cols-3 gap-3">
+            <div className="rounded-xl border border-border/80 bg-background/40 p-4"><div className="text-xl font-semibold text-primary">24/7</div><div className="mt-1 text-xs text-muted-foreground">Availability</div>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold">API</div>
-              <div className="text-sm text-white/60">RESTful</div>
+            <div className="rounded-xl border border-border/80 bg-background/40 p-4"><div className="text-xl font-semibold text-sky-300">REST</div><div className="mt-1 text-xs text-muted-foreground">API first</div>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold">24/7</div>
-              <div className="text-sm text-white/60">Support</div>
+            <div className="rounded-xl border border-border/80 bg-background/40 p-4"><div className="text-xl font-semibold text-amber-300">∞</div><div className="mt-1 text-xs text-muted-foreground">Possibilities</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Right Panel - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-background">
-        <div className="w-full max-w-md space-y-8">
+      <div className="flex items-center justify-center px-6 py-12 sm:px-10">
+        <div className="w-full max-w-md space-y-8 animate-enter">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 justify-center mb-4">
-            <div className="w-10 h-10 bg-violet-600 rounded-xl flex items-center justify-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <Layers className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold">Headless CMS</span>
+            <span className="text-xl font-semibold">Northstar CMS</span>
           </div>
 
           <div className="text-center lg:text-left">
-            <h2 className="text-3xl font-bold tracking-tight">Selamat Datang</h2>
+            <p className="mb-3 text-xs font-medium uppercase tracking-[0.18em] text-primary">Welcome back</p>
+            <h2 className="text-3xl font-semibold tracking-tight">Sign in to your workspace</h2>
             <p className="text-muted-foreground mt-2">
-              Masukkan kredensial Anda untuk mengakses dashboard
+              Continue managing your projects and content.
             </p>
             {process.env.NEXT_PUBLIC_DEMO_EMAIL && (
               <p className="mt-3 text-sm rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-950/30 px-3 py-2 text-violet-700 dark:text-violet-300">
@@ -119,7 +114,7 @@ export default function LoginPage() {
                 <Label htmlFor="password">Password</Label>
                 <Link
                   href="/forgot-password"
-                  className="text-sm text-violet-500 hover:text-violet-400 transition-colors"
+                  className="text-sm text-primary hover:underline transition-colors"
                 >
                   Lupa password?
                 </Link>
@@ -146,7 +141,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full h-11 bg-violet-600 hover:bg-violet-700 text-white font-medium"
+              className="h-11 w-full font-medium"
               disabled={loading}
             >
               {loading ? (
@@ -166,7 +161,7 @@ export default function LoginPage() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
-                Atau
+                OR
               </span>
             </div>
           </div>
@@ -175,7 +170,7 @@ export default function LoginPage() {
             Belum punya akun?{" "}
             <Link
               href="/register"
-              className="text-violet-500 hover:text-violet-400 font-medium transition-colors"
+              className="font-medium text-primary hover:underline transition-colors"
             >
               Daftar sekarang
             </Link>

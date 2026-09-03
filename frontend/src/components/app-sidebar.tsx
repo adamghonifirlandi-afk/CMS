@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
+import { useActiveProject } from "@/components/active-project-provider";
 import {
   Sidebar,
   SidebarContent,
@@ -106,6 +107,10 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { setOpenMobile, isMobile, state } = useSidebar();
   const { user } = useAuthStore();
+  const { activeProject } = useActiveProject();
+
+  const projectHref = (url: string) =>
+    activeProject ? `${url}?projectId=${activeProject.id}` : url;
 
   const initials = user?.fullName
     ? user.fullName
@@ -117,25 +122,25 @@ export function AppSidebar() {
     : "U";
 
   return (
-    <Sidebar className="border-r border-border/40 bg-sidebar">
-      <SidebarHeader className="p-4 border-b border-border/40">
+    <Sidebar className="border-r border-sidebar-border/80 bg-sidebar">
+      <SidebarHeader className="p-5 border-b border-sidebar-border/80">
         <Link href="/dashboard" className="flex items-center gap-3 transition-opacity hover:opacity-80">
-          <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+          <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shrink-0 shadow-[0_0_24px_oklch(0.78_0.15_174_/_0.22)]">
             <Layers className="w-4 h-4 text-white" />
           </div>
           <div className="flex flex-col overflow-hidden">
-            <span className="font-bold text-sm tracking-tight text-foreground truncate">Antigravity CMS</span>
+            <span className="font-semibold text-sm tracking-tight text-foreground truncate">Northstar CMS</span>
             <p className="text-[10px] text-muted-foreground leading-none truncate">
-              Enterprise Headless
+              Content infrastructure
             </p>
           </div>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-4 gap-6">
+      <SidebarContent className="px-3 py-5 gap-5">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 tracking-wider">
-            MAIN
+          <SidebarGroupLabel className="text-[10px] font-semibold text-muted-foreground/60 tracking-[0.16em]">
+            WORKSPACE
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -146,7 +151,7 @@ export function AppSidebar() {
                     tooltip={item.title}
                     render={<Link href={item.url} />}
                     onClick={() => isMobile && setOpenMobile(false)}
-                    className="data-[active=true]:bg-violet-500/10 data-[active=true]:text-violet-500 data-[active=true]:font-medium transition-all"
+                    className="data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-medium transition-all"
                   >
                     <item.icon className="w-4 h-4" />
                     <span>{item.title}</span>
@@ -158,8 +163,8 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 tracking-wider">
-            WORKSPACE
+          <SidebarGroupLabel className="text-[10px] font-semibold text-muted-foreground/60 tracking-[0.16em]">
+            CONTENT
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -168,9 +173,9 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     isActive={pathname === item.url || pathname.startsWith(item.url + "/")}
                     tooltip={item.title}
-                    render={<Link href={item.url} />}
+                    render={<Link href={projectHref(item.url)} />}
                     onClick={() => isMobile && setOpenMobile(false)}
-                    className="data-[active=true]:bg-violet-500/10 data-[active=true]:text-violet-500 data-[active=true]:font-medium transition-all"
+                    className="data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-medium transition-all"
                   >
                     <item.icon className="w-4 h-4" />
                     <span>{item.title}</span>
@@ -182,8 +187,8 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 tracking-wider">
-            SETTINGS
+          <SidebarGroupLabel className="text-[10px] font-semibold text-muted-foreground/60 tracking-[0.16em]">
+            TEAM & SETTINGS
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -194,7 +199,7 @@ export function AppSidebar() {
                     tooltip={item.title}
                     render={<Link href={item.url} />}
                     onClick={() => isMobile && setOpenMobile(false)}
-                    className="data-[active=true]:bg-violet-500/10 data-[active=true]:text-violet-500 data-[active=true]:font-medium transition-all"
+                    className="data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-medium transition-all"
                   >
                     <item.icon className="w-4 h-4" />
                     <span>{item.title}</span>
@@ -206,7 +211,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-border/40">
+      <SidebarFooter className="p-4 border-t border-sidebar-border/80">
         <div className="flex items-center gap-3 overflow-hidden">
           <Avatar className="h-8 w-8 shrink-0 border border-border">
             <AvatarFallback className="bg-muted text-muted-foreground text-xs">

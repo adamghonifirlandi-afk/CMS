@@ -28,11 +28,13 @@ export function ActiveProjectProvider({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     const loadActiveProject = async () => {
-      const storedId = localStorage.getItem(ACTIVE_PROJECT_KEY);
+      const queryProjectId = new URLSearchParams(window.location.search).get("projectId");
+      const storedId = queryProjectId || localStorage.getItem(ACTIVE_PROJECT_KEY);
       if (storedId) {
         try {
           const response = await api.get(`/projects/${storedId}`);
           setActiveProjectState(response.data?.data || response.data);
+          localStorage.setItem(ACTIVE_PROJECT_KEY, storedId);
         } catch (error) {
           console.error("Failed to load active project:", error);
           localStorage.removeItem(ACTIVE_PROJECT_KEY);
@@ -41,6 +43,18 @@ export function ActiveProjectProvider({ children }: { children: React.ReactNode 
       setIsLoading(false);
     };
     loadActiveProject();
+  }, []);
+
+  useEffect(() => {
+    const queryProjectId = new URLSearchParams(window.location.search).get("projectId");
+    if (!queryProjectId) return;
+
+    api.get(`/projects/${queryProjectId}`)
+      .then((response) => {
+        const project = response.data?.data || response.data;
+        if (project?.id) setActiveProject(project);
+      })
+      .catch(() => undefined);
   }, []);
 
   const setActiveProject = (project: Project) => {
