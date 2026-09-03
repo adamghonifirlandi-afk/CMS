@@ -22,6 +22,7 @@ import {
 import { Copy, Key, Plus, ShieldOff } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 interface ApiToken {
   id: string;
@@ -179,7 +180,7 @@ export default function ApiTokensPage() {
                 </div>
                 <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={() => handleCopy(token)}><Copy className="mr-1.5 h-3.5 w-3.5" /> Copy</Button>
-                {token.status === "ACTIVE" && <Button variant="destructive" size="sm" onClick={() => handleRevoke(token)}><ShieldOff className="mr-1.5 h-3.5 w-3.5" /> Revoke</Button>}
+                {token.status === "ACTIVE" && <ConfirmationDialog title="Revoke API token" description={`Revoke ${token.name}? Integrations using this token will stop working.`} confirmText="Revoke token" variant="destructive" onConfirm={() => handleRevoke(token)} trigger={<Button variant="destructive" size="sm"><ShieldOff className="mr-1.5 h-3.5 w-3.5" /> Revoke</Button>} />}
                 <Badge variant={token.status === "ACTIVE" ? "default" : "secondary"}>
                   {token.status}
                 </Badge>
