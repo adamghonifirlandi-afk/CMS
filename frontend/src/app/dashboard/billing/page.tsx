@@ -140,10 +140,10 @@ export default function BillingPage() {
                 ? Object.keys(plan.features).filter((key) => plan.features[key] === true)
                 : [];
               return (
-                <Card key={plan.id} className={`relative flex flex-col ${isCurrent ? 'border-violet-500 ring-1 ring-violet-500' : ''}`}>
+                <Card key={plan.id} className={`relative flex flex-col ${isCurrent ? 'border-violet-500 shadow-md shadow-violet-500/10' : 'border-border/50 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/5'} transition-all`}>
                   {isCurrent && (
-                    <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-violet-500 text-white text-xs px-3 py-1 rounded-full font-medium">
-                      Aktif
+                    <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-violet-600 text-white text-xs px-3 py-1 rounded-full font-medium shadow-sm">
+                      Paket Aktif
                     </div>
                   )}
                   <CardHeader>

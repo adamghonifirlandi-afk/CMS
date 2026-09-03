@@ -55,6 +55,26 @@ export default function OrganizationSettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="text-destructive">Danger Zone</CardTitle>
+          <CardDescription>
+            Tindakan di bawah ini tidak dapat dibatalkan. Pastikan Anda yakin sebelum melanjutkan.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-destructive/20 rounded-lg bg-destructive/5">
+            <div>
+              <h4 className="font-medium text-foreground">Hapus Organisasi</h4>
+              <p className="text-sm text-muted-foreground">Semua proyek, anggota, dan pengaturan akan dihapus secara permanen.</p>
+            </div>
+            <Button variant="destructive" onClick={() => toast.error("Hapus melalui halaman Organisasi utama untuk konfirmasi.")}>
+              Hapus Organisasi
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

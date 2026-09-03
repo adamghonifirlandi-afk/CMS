@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuthStore } from "@/store/auth";
 import {
   Sidebar,
   SidebarContent,
@@ -28,7 +29,9 @@ import {
   GitBranch,
   Key,
   Settings,
+  Mail,
 } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const mainNavItems = [
   {
@@ -83,6 +86,11 @@ const settingsNavItems = [
     icon: Users,
   },
   {
+    title: "Invitations",
+    url: "/dashboard/invitations",
+    icon: Mail, // Changed from Users to Mail to match intent
+  },
+  {
     title: "API Tokens",
     url: "/dashboard/api-tokens",
     icon: Key,
@@ -96,27 +104,39 @@ const settingsNavItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const { setOpenMobile, isMobile } = useSidebar();
+  const { setOpenMobile, isMobile, state } = useSidebar();
+  const { user } = useAuthStore();
+
+  const initials = user?.fullName
+    ? user.fullName
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "U";
 
   return (
-    <Sidebar className="border-r border-sidebar-border">
-      <SidebarHeader className="p-4">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-violet-600 rounded-lg flex items-center justify-center">
-            <Layers className="w-5 h-5 text-white" />
+    <Sidebar className="border-r border-border/40 bg-sidebar">
+      <SidebarHeader className="p-4 border-b border-border/40">
+        <Link href="/dashboard" className="flex items-center gap-3 transition-opacity hover:opacity-80">
+          <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+            <Layers className="w-4 h-4 text-white" />
           </div>
-          <div>
-            <span className="font-bold text-lg tracking-tight">CMS</span>
-            <p className="text-[10px] text-muted-foreground leading-none">
-              Headless CMS Platform
+          <div className="flex flex-col overflow-hidden">
+            <span className="font-bold text-sm tracking-tight text-foreground truncate">Antigravity CMS</span>
+            <p className="text-[10px] text-muted-foreground leading-none truncate">
+              Enterprise Headless
             </p>
           </div>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2 py-4 gap-6">
         <SidebarGroup>
-          <SidebarGroupLabel>Menu Utama</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 tracking-wider">
+            MAIN
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNavItems.map((item) => (
@@ -126,6 +146,7 @@ export function AppSidebar() {
                     tooltip={item.title}
                     render={<Link href={item.url} />}
                     onClick={() => isMobile && setOpenMobile(false)}
+                    className="data-[active=true]:bg-violet-500/10 data-[active=true]:text-violet-500 data-[active=true]:font-medium transition-all"
                   >
                     <item.icon className="w-4 h-4" />
                     <span>{item.title}</span>
@@ -137,7 +158,9 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Content</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 tracking-wider">
+            WORKSPACE
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {contentNavItems.map((item) => (
@@ -147,6 +170,7 @@ export function AppSidebar() {
                     tooltip={item.title}
                     render={<Link href={item.url} />}
                     onClick={() => isMobile && setOpenMobile(false)}
+                    className="data-[active=true]:bg-violet-500/10 data-[active=true]:text-violet-500 data-[active=true]:font-medium transition-all"
                   >
                     <item.icon className="w-4 h-4" />
                     <span>{item.title}</span>
@@ -158,7 +182,9 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Settings</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 tracking-wider">
+            SETTINGS
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {settingsNavItems.map((item) => (
@@ -168,6 +194,7 @@ export function AppSidebar() {
                     tooltip={item.title}
                     render={<Link href={item.url} />}
                     onClick={() => isMobile && setOpenMobile(false)}
+                    className="data-[active=true]:bg-violet-500/10 data-[active=true]:text-violet-500 data-[active=true]:font-medium transition-all"
                   >
                     <item.icon className="w-4 h-4" />
                     <span>{item.title}</span>
@@ -179,8 +206,20 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 text-[10px] text-muted-foreground text-center">
-        Headless CMS v1.0
+      <SidebarFooter className="p-4 border-t border-border/40">
+        <div className="flex items-center gap-3 overflow-hidden">
+          <Avatar className="h-8 w-8 shrink-0 border border-border">
+            <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          {state === "expanded" && (
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-sm font-medium truncate text-foreground">{user?.fullName || "User"}</span>
+              <span className="text-xs text-muted-foreground truncate">{user?.email || ""}</span>
+            </div>
+          )}
+        </div>
       </SidebarFooter>
     </Sidebar>
   );

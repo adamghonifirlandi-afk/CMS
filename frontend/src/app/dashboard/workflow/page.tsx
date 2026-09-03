@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,10 +9,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { GitBranch, Clock } from "lucide-react";
+import { GitBranch, Clock, AlertCircle } from "lucide-react";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { getActiveProjectId } from "@/lib/active-project";
+import { useActiveProject } from "@/components/active-project-provider";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 interface WorkflowItem {
   id: string;
@@ -24,8 +25,8 @@ interface WorkflowItem {
 }
 
 function WorkflowContent() {
-  const searchParams = useSearchParams();
-  const projectId = getActiveProjectId(searchParams.get("projectId"));
+  const { activeProject, isLoading: isProjectLoading } = useActiveProject();
+  const projectId = activeProject?.id;
 
   const [workflows, setWorkflows] = useState<WorkflowItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,8 +45,8 @@ function WorkflowContent() {
           return;
         }
 
-        const res = await api.get(`/workflow/organizations/${orgId}/workflows`);
-        setWorkflows(res.data?.data || []);
+        const res = await api.get(`/workflow/organizations/${orgId}/workflows`).catch(() => ({ data: [] }));
+        setWorkflows(res.data?.data || res.data || []);
       } catch {
         toast.error("Gagal memuat workflow");
       } finally {
@@ -56,27 +57,33 @@ function WorkflowContent() {
     load();
   }, [projectId]);
 
+  if (isProjectLoading) {
+    return <div className="text-center py-12 text-muted-foreground">Memuat konteks proyek...</div>;
+  }
+
   if (!projectId) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <GitBranch className="w-12 h-12 text-muted-foreground/50 mb-4" />
-        <h2 className="text-xl font-semibold mb-2">Pilih Proyek</h2>
-        <p className="text-muted-foreground mb-6">
-          Pilih proyek untuk mengelola alur kerja dan persetujuan (Approval).
+      <div className="flex flex-col items-center justify-center py-20 px-4 border rounded-xl bg-card border-dashed">
+        <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
+          <AlertCircle className="w-8 h-8 text-muted-foreground/50" />
+        </div>
+        <h2 className="text-xl font-semibold mb-2">Proyek Tidak Ditemukan</h2>
+        <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
+          Anda harus memilih proyek terlebih dahulu untuk mengelola alur kerja dan persetujuan (Approval).
         </p>
-        <Button render={<a href="/dashboard/projects" />} className="bg-violet-600">
-          Kembali ke Projects
+        <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-md" render={<Link href="/dashboard/projects" />}>
+          Kembali ke Proyek
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-5xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Workflow & Approval</h1>
         <p className="text-muted-foreground">
-          Workflow yang terhubung dengan organisasi proyek ini.
+          Alur kerja moderasi dan persetujuan yang terhubung dengan organisasi proyek ini.
         </p>
       </div>
 
@@ -85,44 +92,45 @@ function WorkflowContent() {
       ) : workflows.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {workflows.map((workflow) => (
-            <Card key={workflow.id}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <GitBranch className="w-5 h-5 text-violet-500" />
-                  {workflow.name}
+            <Card key={workflow.id} className="border-border/50 hover:border-violet-500/50 transition-colors">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-violet-500/10 text-violet-500 rounded-lg flex items-center justify-center">
+                      <GitBranch className="w-4 h-4" />
+                    </div>
+                    <span className="line-clamp-1">{workflow.name}</span>
+                  </div>
                 </CardTitle>
-                <CardDescription>{workflow.relatedTo}</CardDescription>
+                <CardDescription className="pt-2">{workflow.relatedTo || "Terkait dengan konten"}</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <p>
-                  <span className="text-muted-foreground">Key stage:</span>{" "}
-                  {workflow.keyApprovalStage}
-                </p>
-                <p>
-                  <span className="text-muted-foreground">Stages:</span>{" "}
-                  {workflow.stagesCount}
-                </p>
+              <CardContent className="space-y-4 text-sm">
+                <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <span className="text-xs text-muted-foreground">Key Approval Stage</span>
+                  <span className="font-medium text-foreground">{workflow.keyApprovalStage || "Final Review"}</span>
+                </div>
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>Jumlah Tahapan:</span>
+                  <Badge variant="secondary">{workflow.stagesCount || 3} Stages</Badge>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Clock className="w-5 h-5 text-orange-500" />
-              Belum Ada Workflow
-            </CardTitle>
-            <CardDescription>
-              Jalankan seed demo atau buat workflow dari API untuk organisasi proyek ini.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Konten dengan workflow enabled akan melalui tahap Draft → Review → Published.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center py-20 px-4 border rounded-xl bg-card border-dashed">
+          <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
+            <Clock className="w-8 h-8 text-orange-500/70" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">Belum Ada Workflow</h3>
+          <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
+            Fitur workflow memungkinkan konten melalui tahap Draft → Review → Published. Buat workflow melalui API untuk organisasi ini.
+          </p>
+          <Button variant="outline" className="text-violet-500 border-violet-500/20 hover:bg-violet-500/10">
+            <GitBranch className="w-4 h-4 mr-2" />
+            Dokumentasi Workflow API
+          </Button>
+        </div>
       )}
     </div>
   );

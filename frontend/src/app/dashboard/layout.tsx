@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { DashboardTopbar } from "@/components/dashboard-topbar";
+import { ActiveProjectProvider } from "@/components/active-project-provider";
 
 export default function DashboardLayout({
   children,
@@ -32,12 +33,14 @@ export default function DashboardLayout({
   }, [router]);
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <DashboardTopbar />
-        <main className="flex-1 p-6 overflow-auto">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+    <ActiveProjectProvider>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <DashboardTopbar />
+          <main className="flex-1 p-6 overflow-auto">{children}</main>
+        </SidebarInset>
+      </SidebarProvider>
+    </ActiveProjectProvider>
   );
 }

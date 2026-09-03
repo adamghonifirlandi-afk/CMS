@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Dialog,
@@ -31,10 +32,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { FolderKanban, Plus, ExternalLink, Globe, LayoutTemplate, Building2 } from "lucide-react";
+import { FolderKanban, Plus, ExternalLink, Globe, LayoutTemplate, Building2, Trash2, Settings } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
-import { setActiveProjectId } from "@/lib/active-project";
+import { useActiveProject } from "@/components/active-project-provider";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 interface Project {
   id: string;
@@ -52,8 +54,10 @@ interface Organization {
 }
 
 function ProjectsContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const orgFilter = searchParams.get("orgId");
+  const { setActiveProject, activeProject, clearProject } = useActiveProject();
   
   const [projects, setProjects] = useState<Project[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -123,8 +127,26 @@ function ProjectsContent() {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      await api.delete(`/projects/${id}`);
+      toast.success("Proyek berhasil dihapus");
+      if (activeProject?.id === id) {
+        clearProject();
+      }
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Gagal menghapus proyek");
+    }
+  };
+
+  const handleOpenCMS = (project: Project) => {
+    setActiveProject(project);
+    router.push(`/dashboard/content-builder?projectId=${project.id}`);
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
@@ -133,10 +155,11 @@ function ProjectsContent() {
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger render={<Button className="bg-violet-600 hover:bg-violet-700 text-white" />}>
-<Plus className="w-4 h-4 mr-2" />
-              Buat Proyek
-</DialogTrigger>
+          <DialogTrigger render={
+            <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-md">
+              <Plus className="w-4 h-4 mr-2" /> Buat Proyek
+            </Button>
+          } />
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Buat Proyek Baru</DialogTitle>
@@ -152,7 +175,7 @@ function ProjectsContent() {
                     value={formData.organizationId} 
                     onValueChange={(val) => setFormData({...formData, organizationId: val || ""})}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-11">
                       <SelectValue placeholder="Pilih Organisasi" />
                     </SelectTrigger>
                     <SelectContent>
@@ -169,6 +192,7 @@ function ProjectsContent() {
                     placeholder="Contoh: Blog E-commerce"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="h-11"
                   />
                 </div>
                 <div className="space-y-2">
@@ -186,7 +210,7 @@ function ProjectsContent() {
                     value={formData.template} 
                     onValueChange={(val) => setFormData({...formData, template: val || ""})}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-11">
                       <SelectValue placeholder="Pilih Template" />
                     </SelectTrigger>
                     <SelectContent>
@@ -217,65 +241,97 @@ function ProjectsContent() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => {
             const org = organizations.find(o => o.id === project.organizationId);
+            const isActive = activeProject?.id === project.id;
+
             return (
-              <Card key={project.id} className="hover:border-violet-500/50 transition-colors flex flex-col">
+              <Card key={project.id} className={`group relative overflow-hidden transition-all flex flex-col ${isActive ? 'border-violet-500 shadow-sm shadow-violet-500/10' : 'border-border/50 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/5'}`}>
                 <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <Badge variant={project.status === "ACTIVE" ? "default" : "secondary"}>
-                      {project.status || "ACTIVE"}
-                    </Badge>
-                    {project.template && project.template !== "BLANK" && (
-                      <Badge variant="outline" className="text-xs font-normal">
-                        <LayoutTemplate className="w-3 h-3 mr-1" />
-                        {project.template}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={project.status === "ACTIVE" ? "default" : "secondary"} className={project.status === "ACTIVE" ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20" : ""}>
+                        {project.status || "ACTIVE"}
                       </Badge>
-                    )}
+                      {isActive && (
+                        <Badge variant="outline" className="border-violet-500 text-violet-500 bg-violet-500/5">Active</Badge>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-1">
+                      <ConfirmationDialog
+                        title="Hapus Proyek"
+                        description={`Apakah Anda yakin ingin menghapus proyek "${project.name}"? Semua model konten, data, dan media di dalamnya akan terhapus secara permanen.`}
+                        confirmText="Hapus"
+                        variant="destructive"
+                        onConfirm={() => handleDelete(project.id)}
+                        trigger={
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        }
+                      />
+                      <Button variant="ghost" size="icon" className="h-8 w-8" render={<Link href={`/dashboard/projects/${project.id}/settings`} />}>
+                        <Settings className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                      </Button>
+                    </div>
                   </div>
-                  <CardTitle className="text-xl line-clamp-1">{project.name}</CardTitle>
-                  <CardDescription className="line-clamp-2 min-h-[40px]">
-                    {project.description || "Tidak ada deskripsi"}
-                  </CardDescription>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 bg-violet-500/10 text-violet-500 rounded-lg flex items-center justify-center shrink-0">
+                      <FolderKanban className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl line-clamp-1">{project.name}</CardTitle>
+                      <CardDescription className="line-clamp-2 mt-1 min-h-[40px]">
+                        {project.description || "Tidak ada deskripsi proyek."}
+                      </CardDescription>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col justify-end">
-                  <div className="space-y-3">
+                  <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2">
                     <div className="flex items-center text-xs text-muted-foreground">
-                      <Building2 className="w-3.5 h-3.5 mr-1.5" />
-                      {org?.name || "Unknown Org"}
+                      <Building2 className="w-3.5 h-3.5 mr-2 text-muted-foreground/70" />
+                      <span className="truncate">{org?.name || "Unknown Org"}</span>
                     </div>
                     {project.customDomain && (
                       <div className="flex items-center text-xs text-muted-foreground">
-                        <Globe className="w-3.5 h-3.5 mr-1.5 text-blue-500" />
-                        <a href={`https://${project.customDomain}`} target="_blank" rel="noreferrer" className="hover:underline">
+                        <Globe className="w-3.5 h-3.5 mr-2 text-blue-500/70" />
+                        <a href={`https://${project.customDomain}`} target="_blank" rel="noreferrer" className="hover:underline hover:text-blue-500 truncate">
                           {project.customDomain}
                         </a>
                       </div>
                     )}
-                    <div className="pt-4 flex gap-2">
-                      <Button variant="default" className="flex-1 bg-violet-600 hover:bg-violet-700" onClick={() => setActiveProjectId(project.id)}>
-                        <Link href={`/dashboard/content-builder?projectId=${project.id}`}>
-                          Buka CMS
-                        </Link>
-                      </Button>
-                      <Button variant="outline" size="icon" >
-                        <Link href={`/dashboard/projects/${project.id}/settings`}>
-                          <ExternalLink className="w-4 h-4" />
-                        </Link>
-                      </Button>
-                    </div>
+                    {project.template && project.template !== "BLANK" && (
+                      <div className="flex items-center text-xs text-muted-foreground">
+                        <LayoutTemplate className="w-3.5 h-3.5 mr-2 text-muted-foreground/70" />
+                        <span className="truncate capitalize">{project.template.toLowerCase()} Template</span>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
+                <CardFooter className="pt-2 pb-6 px-6">
+                  <Button 
+                    variant={isActive ? "secondary" : "default"} 
+                    className={isActive ? "w-full" : "w-full bg-violet-600 hover:bg-violet-700"} 
+                    onClick={() => handleOpenCMS(project)}
+                  >
+                    {isActive ? "Lanjutkan di CMS" : "Buka CMS"}
+                  </Button>
+                </CardFooter>
               </Card>
             );
           })}
         </div>
       ) : (
-        <div className="text-center py-16 border rounded-lg bg-muted/10 border-dashed">
-          <FolderKanban className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-          <h3 className="text-lg font-medium">Belum ada proyek</h3>
-          <p className="text-muted-foreground text-sm max-w-sm mx-auto mt-1 mb-6">
-            Mulai kelola konten dengan membuat proyek CMS pertama Anda.
+        <div className="flex flex-col items-center justify-center py-20 px-4 border rounded-xl bg-card border-dashed">
+          <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
+            <FolderKanban className="w-8 h-8 text-muted-foreground/50" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">Belum ada proyek</h3>
+          <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
+            Mulai kelola konten dengan membuat proyek CMS pertama Anda di dalam organisasi.
           </p>
-          <Button onClick={() => setIsDialogOpen(true)} className="bg-violet-600 hover:bg-violet-700 text-white">
+          <Button onClick={() => setIsDialogOpen(true)} className="bg-violet-600 hover:bg-violet-700 text-white shadow-md">
             <Plus className="w-4 h-4 mr-2" />
             Buat Proyek Baru
           </Button>

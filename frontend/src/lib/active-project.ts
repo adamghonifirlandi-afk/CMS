@@ -1,4 +1,4 @@
-const ACTIVE_PROJECT_KEY = "cms-active-project-id";
+export const ACTIVE_PROJECT_KEY = "cms-active-project-id";
 
 export function getActiveProjectId(queryProjectId?: string | null) {
   if (queryProjectId) {

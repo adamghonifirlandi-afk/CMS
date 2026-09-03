@@ -59,6 +59,26 @@ export default function ProjectSettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="text-destructive">Danger Zone</CardTitle>
+          <CardDescription>
+            Tindakan di bawah ini tidak dapat dibatalkan.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 border border-destructive/20 rounded-lg bg-destructive/5">
+            <div>
+              <h4 className="font-medium text-foreground">Hapus Proyek</h4>
+              <p className="text-sm text-muted-foreground">Semua model konten dan data di dalamnya akan terhapus.</p>
+            </div>
+            <Button variant="destructive" onClick={() => toast.error("Hapus melalui halaman Proyek utama untuk konfirmasi.")}>
+              Hapus Proyek
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

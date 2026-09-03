@@ -86,7 +86,8 @@ function CollaboratorsContent() {
       // Usually it's /collaborators?organizationId=orgId or /organizations/:id/collaborators.
       // Let's assume GET /collaborators fetches all and we filter by orgId
       const res = await api.get(`/collaborators/${orgId}`);
-      const allCollabs = res.data?.data || res.data || [];
+      const responseData = res.data?.data || res.data || [];
+      const allCollabs = Array.isArray(responseData) ? responseData : responseData.all || [];
       setCollaborators(allCollabs);
     } catch (err) {
       toast.error("Gagal memuat kolaborator");

@@ -12,6 +12,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from "@/components/ui/card";
 import {
   Dialog,
@@ -23,22 +24,28 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Database, Plus, Settings2, LayoutTemplate, Layers, AlertCircle } from "lucide-react";
+import { Database, Plus, Settings2, LayoutTemplate, Layers, AlertCircle, FileType2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { getActiveProjectId } from "@/lib/active-project";
+import { useActiveProject } from "@/components/active-project-provider";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import Link from "next/link";
 
 interface Model {
   id: string;
   name: string;
-  slug: string;
+  apiId: string;
   type: string; // 'SINGLE', 'COLLECTION', 'COMPONENT'
-  description: string;
+  description?: string;
+  _count?: {
+    fields?: number;
+    entries?: number;
+  };
 }
 
 function ContentBuilderContent() {
-  const searchParams = useSearchParams();
-  const projectId = getActiveProjectId(searchParams.get("projectId"));
+  const { activeProject, isLoading: isProjectLoading } = useActiveProject();
+  const projectId = activeProject?.id;
 
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,9 +69,9 @@ function ContentBuilderContent() {
         api.get(`/content-builder/projects/${projectId}/components`).catch(() => ({ data: { data: [] } }))
       ]);
       
-      const singles = (singleRes.data?.data || []).map((m: any) => ({ ...m, type: "SINGLE" }));
-      const multis = (multiRes.data?.data || []).map((m: any) => ({ ...m, type: "COLLECTION" }));
-      const comps = (compRes.data?.data || []).map((m: any) => ({ ...m, type: "COMPONENT" }));
+      const singles = (singleRes.data?.data || []).map((m: any) => ({ ...m, type: "SINGLE", apiId: m.apiId || m.slug }));
+      const multis = (multiRes.data?.data || []).map((m: any) => ({ ...m, type: "COLLECTION", apiId: m.apiId || m.slug }));
+      const comps = (compRes.data?.data || []).map((m: any) => ({ ...m, type: "COMPONENT", apiId: m.apiId || m.slug }));
       
       setModels([...singles, ...multis, ...comps]);
     } catch (err) {
@@ -75,7 +82,9 @@ function ContentBuilderContent() {
   };
 
   useEffect(() => {
-    fetchModels();
+    if (projectId) {
+      fetchModels();
+    }
   }, [projectId]);
 
   const handleSlugify = (text: string) => {
@@ -103,7 +112,15 @@ function ContentBuilderContent() {
       if (formData.type === "SINGLE") endpoint = `/content-builder/projects/${projectId}/single-pages`;
       if (formData.type === "COMPONENT") endpoint = `/content-builder/projects/${projectId}/components`;
       
-      await api.post(endpoint, formData);
+      // We pass apiId to match backend Prisma schema (which uses apiId, not slug)
+      const payload = {
+        name: formData.name,
+        apiId: formData.slug,
+        slug: formData.slug, // Pass both just in case
+        description: formData.description,
+      };
+
+      await api.post(endpoint, payload);
       toast.success("Tipe konten berhasil dibuat");
       setIsDialogOpen(false);
       setFormData({ name: "", slug: "", type: "COLLECTION", description: "" });
@@ -115,23 +132,43 @@ function ContentBuilderContent() {
     }
   };
 
+  const handleDeleteModel = async (id: string, type: string) => {
+    try {
+      let endpoint = `/content-builder/multiple-pages/${id}`;
+      if (type === "SINGLE") endpoint = `/content-builder/single-pages/${id}`;
+      if (type === "COMPONENT") endpoint = `/content-builder/components/${id}`;
+
+      await api.delete(endpoint);
+      toast.success("Tipe konten berhasil dihapus");
+      fetchModels();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Gagal menghapus tipe konten");
+    }
+  };
+
+  if (isProjectLoading) {
+    return <div className="text-center py-12 text-muted-foreground">Memuat konteks proyek...</div>;
+  }
+
   if (!projectId) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <AlertCircle className="w-12 h-12 text-muted-foreground/50 mb-4" />
+      <div className="flex flex-col items-center justify-center py-20 px-4 border rounded-xl bg-card border-dashed">
+        <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
+          <AlertCircle className="w-8 h-8 text-muted-foreground/50" />
+        </div>
         <h2 className="text-xl font-semibold mb-2">Proyek Tidak Ditemukan</h2>
-        <p className="text-muted-foreground mb-6">
-          Anda harus memilih proyek terlebih dahulu dari halaman Projects.
+        <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
+          Anda harus memilih proyek terlebih dahulu melalui pemilih proyek di bilah navigasi atas, atau kembali ke halaman Proyek.
         </p>
-        <Button  className="bg-violet-600 hover:bg-violet-700 text-white">
-          <a href="/dashboard/projects">Kembali ke Projects</a>
+        <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-md" render={<Link href="/dashboard/projects" />}>
+          Kembali ke Proyek
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
@@ -141,11 +178,12 @@ function ContentBuilderContent() {
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger render={<Button className="bg-violet-600 hover:bg-violet-700 text-white" />}>
-<Plus className="w-4 h-4 mr-2" />
-              Buat Tipe Konten
-</DialogTrigger>
-          <DialogContent>
+          <DialogTrigger render={
+            <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-md">
+              <Plus className="w-4 h-4 mr-2" /> Buat Tipe Konten
+            </Button>
+          } />
+          <DialogContent className="sm:max-w-[475px]">
             <DialogHeader>
               <DialogTitle>Tipe Konten Baru</DialogTitle>
               <DialogDescription>
@@ -161,13 +199,13 @@ function ContentBuilderContent() {
                     <TabsTrigger value="COMPONENT">Component</TabsTrigger>
                   </TabsList>
                   <TabsContent value="COLLECTION" className="text-xs text-muted-foreground pt-2">
-                    Cocok untuk: Blog posts, produk, portofolio, dll.
+                    Cocok untuk konten berulang: Blog posts, produk, portofolio, event, dll.
                   </TabsContent>
                   <TabsContent value="SINGLE" className="text-xs text-muted-foreground pt-2">
-                    Cocok untuk: Halaman Homepage, About Us, Footer config, dll.
+                    Cocok untuk konten unik tunggal: Halaman Homepage, About Us, Global SEO.
                   </TabsContent>
                   <TabsContent value="COMPONENT" className="text-xs text-muted-foreground pt-2">
-                    Cocok untuk: Hero section, feature card, dan section reusable.
+                    Cocok untuk blok modular: Hero section, feature card, SEO meta group.
                   </TabsContent>
                 </Tabs>
                 
@@ -178,6 +216,7 @@ function ContentBuilderContent() {
                     placeholder="Contoh: Artikel Blog"
                     value={formData.name}
                     onChange={handleNameChange}
+                    className="h-11"
                   />
                 </div>
                 <div className="space-y-2">
@@ -187,6 +226,7 @@ function ContentBuilderContent() {
                     placeholder="artikel-blog"
                     value={formData.slug}
                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                    className="h-11"
                   />
                   <p className="text-[10px] text-muted-foreground">Endpoint API akan berupa: /api/v1/content/{formData.slug}</p>
                 </div>
@@ -196,7 +236,7 @@ function ContentBuilderContent() {
                   Batal
                 </Button>
                 <Button type="submit" disabled={creating} className="bg-violet-600 hover:bg-violet-700 text-white">
-                  {creating ? "Menyimpan..." : "Lanjut merancang field"}
+                  {creating ? "Menyimpan..." : "Buat Model"}
                 </Button>
               </DialogFooter>
             </form>
@@ -207,43 +247,96 @@ function ContentBuilderContent() {
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Memuat struktur konten...</div>
       ) : models.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {models.map((model) => (
-            <Card key={model.id} className="hover:border-violet-500/50 transition-colors">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <Badge variant="outline" className={model.type === 'COLLECTION' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-orange-50 text-orange-700 border-orange-200'}>
-                    {model.type === 'COLLECTION' ? <Layers className="w-3 h-3 mr-1" /> : <LayoutTemplate className="w-3 h-3 mr-1" />}
-                    {model.type}
-                  </Badge>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Settings2 className="w-4 h-4 text-muted-foreground" />
-                  </Button>
-                </div>
-                <CardTitle>{model.name}</CardTitle>
-                <CardDescription className="font-mono text-xs mt-1">/api/.../{model.slug}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" className="w-full text-xs h-8">
-                    Edit Fields (Skema)
-                  </Button>
-                  <Button variant="default" className="w-full text-xs h-8 bg-violet-600 hover:bg-violet-700">
-                    Kelola Konten
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="all">Semua Tipe</TabsTrigger>
+            <TabsTrigger value="COLLECTION">Collections</TabsTrigger>
+            <TabsTrigger value="SINGLE">Single Types</TabsTrigger>
+            <TabsTrigger value="COMPONENT">Components</TabsTrigger>
+          </TabsList>
+
+          {["all", "COLLECTION", "SINGLE", "COMPONENT"].map(tabValue => (
+            <TabsContent key={tabValue} value={tabValue} className="mt-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {models.filter(m => tabValue === "all" || m.type === tabValue).map((model) => (
+                  <Card key={model.id} className="group relative overflow-hidden border-border/50 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/5 transition-all flex flex-col">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <Badge variant="outline" className={`font-medium ${
+                          model.type === 'COLLECTION' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 
+                          model.type === 'SINGLE' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
+                          'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                        }`}>
+                          {model.type === 'COLLECTION' ? <Layers className="w-3 h-3 mr-1.5" /> : 
+                           model.type === 'SINGLE' ? <LayoutTemplate className="w-3 h-3 mr-1.5" /> :
+                           <FileType2 className="w-3 h-3 mr-1.5" />}
+                          {model.type === 'COLLECTION' ? 'Collection' : model.type === 'SINGLE' ? 'Single' : 'Component'}
+                        </Badge>
+                        <div className="flex items-center gap-1">
+                          <ConfirmationDialog
+                            title="Hapus Model Konten"
+                            description={`Apakah Anda yakin ingin menghapus model "${model.name}"? Semua entri konten yang terkait juga akan terhapus.`}
+                            confirmText="Hapus"
+                            variant="destructive"
+                            onConfirm={() => handleDeleteModel(model.id, model.type)}
+                            trigger={
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            }
+                          />
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Settings2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                          </Button>
+                        </div>
+                      </div>
+                      <CardTitle className="text-xl line-clamp-1">{model.name}</CardTitle>
+                      <CardDescription className="font-mono text-xs mt-2 bg-muted/50 p-1.5 rounded border border-border/50 truncate">
+                        /api/.../{model.apiId}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                       <div className="grid grid-cols-2 gap-4 mt-2">
+                        <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
+                          <div className="flex items-center text-xs text-muted-foreground">
+                            Fields
+                          </div>
+                          <span className="font-semibold text-lg">{model._count?.fields || 0}</span>
+                        </div>
+                        {model.type === 'COLLECTION' && (
+                          <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
+                            <div className="flex items-center text-xs text-muted-foreground">
+                              Entries
+                            </div>
+                            <span className="font-semibold text-lg">{model._count?.entries || 0}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                    <CardFooter className="pt-0 pb-6 px-6 gap-3">
+                      <Button variant="outline" className="w-full bg-background">
+                        Edit Skema
+                      </Button>
+                      <Button variant="default" className="w-full bg-violet-600 hover:bg-violet-700" render={<Link href={`/dashboard/content-management?model=${model.apiId}`} />}>
+                        Kelola Konten
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
           ))}
-        </div>
+        </Tabs>
       ) : (
-        <div className="text-center py-16 border rounded-lg bg-muted/10 border-dashed">
-          <Database className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-          <h3 className="text-lg font-medium">Content Builder Masih Kosong</h3>
-          <p className="text-muted-foreground text-sm max-w-md mx-auto mt-1 mb-6">
+        <div className="flex flex-col items-center justify-center py-20 px-4 border rounded-xl bg-card border-dashed">
+          <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
+            <Database className="w-8 h-8 text-muted-foreground/50" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">Content Builder Masih Kosong</h3>
+          <p className="text-muted-foreground text-sm max-w-md mx-auto text-center mt-1 mb-8">
             Mulai rancang API Anda. Buat Tipe Konten (Model) pertama Anda seperti Artikel, Kategori, atau Konfigurasi Halaman.
           </p>
-          <Button onClick={() => setIsDialogOpen(true)} className="bg-violet-600 hover:bg-violet-700 text-white">
+          <Button onClick={() => setIsDialogOpen(true)} className="bg-violet-600 hover:bg-violet-700 text-white shadow-md">
             <Plus className="w-4 h-4 mr-2" />
             Buat Tipe Konten
           </Button>
