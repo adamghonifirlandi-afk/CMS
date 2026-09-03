@@ -42,15 +42,15 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.fullName || !form.email || !form.password) {
-      toast.error("Nama, email, dan password wajib diisi");
+      toast.error("Name, email, and password are required");
       return;
     }
     if (form.password !== form.confirmPassword) {
-      toast.error("Password tidak cocok");
+      toast.error("Passwords do not match");
       return;
     }
     if (form.password.length < 6) {
-      toast.error("Password minimal 6 karakter");
+      toast.error("Password must be at least 6 characters");
       return;
     }
     setLoading(true);
@@ -66,11 +66,11 @@ export default function RegisterPage() {
       await api.post("/auth/register", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      toast.success("Registrasi berhasil! Silakan login.");
+      toast.success("Registration successful! Please log in.");
       router.push("/login");
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
-      const message = axiosErr.response?.data?.message || "Registrasi gagal";
+      const message = axiosErr.response?.data?.message || "Registration failed";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -78,46 +78,47 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen bg-background lg:grid lg:grid-cols-[1.1fr_0.9fr]">
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-600 via-teal-700 to-cyan-800 relative overflow-hidden">
+      <div className="surface-grid relative hidden overflow-hidden border-r border-border/80 bg-card/50 lg:flex">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0aDR2NEgzNnpNMjAgMjBoNHY0SDIweiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
-        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
+        <div className="relative z-10 flex flex-col justify-center px-16 text-foreground xl:px-24">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-[0_0_24px_oklch(0.78_0.15_174_/_0.22)]">
               <Layers className="w-7 h-7" />
             </div>
-            <span className="text-2xl font-bold tracking-tight">Headless CMS</span>
+            <span className="text-xl font-semibold tracking-tight">Northstar CMS</span>
           </div>
-          <h1 className="text-4xl font-bold mb-4 leading-tight">
-            Mulai kelola konten<br />Anda hari ini
+          <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight">
+            Start shaping<br />your content today.
           </h1>
-          <p className="text-lg text-white/70 max-w-md">
-            Buat akun gratis dan mulai bangun proyek digital Anda dengan platform CMS kami.
+          <p className="max-w-md text-base leading-7 text-muted-foreground mt-4">
+            Create a free account and start building your digital projects with our platform.
           </p>
         </div>
       </div>
 
       {/* Right Panel - Register Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-background overflow-y-auto">
-        <div className="w-full max-w-md space-y-6">
-          <div className="lg:hidden flex items-center gap-3 justify-center mb-4">
-            <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center">
+      <div className="flex items-center justify-center px-6 py-12 sm:px-10 h-screen overflow-y-auto">
+        <div className="w-full max-w-md space-y-6 animate-enter pb-8">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-3 justify-center mb-4 pt-8">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <Layers className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold">Headless CMS</span>
+            <span className="text-xl font-semibold">Northstar CMS</span>
           </div>
 
           <div className="text-center lg:text-left">
-            <h2 className="text-3xl font-bold tracking-tight">Buat Akun Baru</h2>
+            <h2 className="text-3xl font-semibold tracking-tight">Create an account</h2>
             <p className="text-muted-foreground mt-2">
-              Isi data di bawah untuk mendaftar
+              Fill in your details below to register
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName">Nama Lengkap *</Label>
+              <Label htmlFor="fullName">Full Name *</Label>
               <Input
                 id="fullName"
                 name="fullName"
@@ -130,12 +131,12 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email">Email address *</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="nama@email.com"
+                placeholder="name@company.com"
                 value={form.email}
                 onChange={handleChange}
                 className="h-11"
@@ -145,11 +146,11 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="company">Perusahaan</Label>
+                <Label htmlFor="company">Company</Label>
                 <Input
                   id="company"
                   name="company"
-                  placeholder="PT ABC"
+                  placeholder="Acme Inc"
                   value={form.company}
                   onChange={handleChange}
                   className="h-11"
@@ -157,7 +158,7 @@ export default function RegisterPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="job">Pekerjaan</Label>
+                <Label htmlFor="job">Job Title</Label>
                 <Input
                   id="job"
                   name="job"
@@ -171,16 +172,16 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="country">Negara</Label>
+              <Label htmlFor="country">Country</Label>
               <select
                 id="country"
                 name="country"
                 value={form.country}
                 onChange={handleChange}
-                className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-11 w-full rounded-md border border-input bg-card px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={loading}
               >
-                <option value="">Pilih Negara</option>
+                <option value="">Select Country</option>
                 {countries.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -196,7 +197,7 @@ export default function RegisterPage() {
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Minimal 6 karakter"
+                  placeholder="Minimum 6 characters"
                   value={form.password}
                   onChange={handleChange}
                   className="h-11 pr-10"
@@ -213,12 +214,12 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Konfirmasi Password *</Label>
+              <Label htmlFor="confirmPassword">Confirm Password *</Label>
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
-                placeholder="Ulangi password"
+                placeholder="Repeat password"
                 value={form.confirmPassword}
                 onChange={handleChange}
                 className="h-11"
@@ -228,27 +229,27 @@ export default function RegisterPage() {
 
             <Button
               type="submit"
-              className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+              className="w-full h-11 font-medium mt-2"
               disabled={loading}
             >
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Mendaftar...
+                  Registering...
                 </>
               ) : (
-                "Daftar"
+                "Create Account"
               )}
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground">
-            Sudah punya akun?{" "}
+          <p className="text-center text-sm text-muted-foreground pt-4">
+            Already have an account?{" "}
             <Link
               href="/login"
-              className="text-emerald-500 hover:text-emerald-400 font-medium transition-colors"
+              className="font-medium text-primary hover:underline transition-colors"
             >
-              Masuk di sini
+              Sign in here
             </Link>
           </p>
         </div>

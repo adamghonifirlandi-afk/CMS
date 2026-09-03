@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import api from "@/lib/api";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -12,374 +10,298 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Database, Plus, Edit3, Trash2, Search, FileText, CheckCircle2, XCircle } from "lucide-react";
-import { toast } from "sonner";
+import { 
+  Plus, 
+  Search, 
+  Filter, 
+  MoreHorizontal, 
+  Edit3, 
+  Trash2, 
+  Eye,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
+  ArrowUpDown
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { useActiveProject } from "@/components/active-project-provider";
-import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import Link from "next/link";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
-function ContentManagementContent() {
-  const searchParams = useSearchParams();
-  const modelFromQuery = searchParams.get("model");
-  const { activeProject, isLoading: isProjectLoading } = useActiveProject();
-  const projectId = activeProject?.id;
+const MOCK_MODELS = [
+  { id: "all", name: "All Content", count: 248 },
+  { id: "1", name: "Blog Posts", count: 42 },
+  { id: "2", name: "Landing Pages", count: 12 },
+  { id: "3", name: "Authors", count: 8 },
+  { id: "4", name: "Case Studies", count: 15 },
+  { id: "5", name: "Homepage", count: 1 },
+  { id: "6", name: "Settings", count: 1 },
+];
 
-  const [models, setModels] = useState<any[]>([]);
-  const [selectedModel, setSelectedModel] = useState<string>("");
-  const [entries, setEntries] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingEntry, setEditingEntry] = useState<any | null>(null);
-  const [entryForm, setEntryForm] = useState({ title: "", content: "" });
-  const [saving, setSaving] = useState(false);
+type EntryStatus = "published" | "draft" | "active" | "pending" | "archived";
 
-  useEffect(() => {
-    if (projectId) {
-      fetchModels();
-    }
-  }, [projectId]);
+const MOCK_ENTRIES = [
+  { id: "e1", title: "Q3 Marketing Launch", type: "Landing Page", status: "published" as EntryStatus, author: "Sarah Jenkins", updatedAt: "2026-08-15T10:00:00Z" },
+  { id: "e2", title: "Top 10 Features of 2026", type: "Blog Post", status: "draft" as EntryStatus, author: "Alex Chen", updatedAt: "2026-09-02T14:30:00Z" },
+  { id: "e3", title: "Homepage Hero", type: "Component", status: "active" as EntryStatus, author: "Sarah Jenkins", updatedAt: "2026-09-01T09:15:00Z" },
+  { id: "e4", title: "API Documentation V2", type: "Documentation", status: "pending" as EntryStatus, author: "David Kim", updatedAt: "2026-09-03T11:45:00Z" },
+  { id: "e5", title: "Summer Sale Promo", type: "Campaign", status: "archived" as EntryStatus, author: "Emma Watson", updatedAt: "2026-07-20T16:20:00Z" },
+  { id: "e6", title: "About Us Redesign", type: "Page", status: "published" as EntryStatus, author: "Michael Scott", updatedAt: "2026-08-28T08:30:00Z" },
+  { id: "e7", title: "Customer Success Stories", type: "Blog Post", status: "published" as EntryStatus, author: "Alex Chen", updatedAt: "2026-08-10T13:10:00Z" },
+  { id: "e8", title: "Sarah Jenkins (Author)", type: "Author", status: "active" as EntryStatus, author: "Admin", updatedAt: "2026-01-15T09:00:00Z" },
+  { id: "e9", title: "Enterprise Pricing Tier", type: "Pricing", status: "draft" as EntryStatus, author: "David Kim", updatedAt: "2026-09-04T08:20:00Z" },
+  { id: "e10", title: "Platform Security Overview", type: "Whitepaper", status: "pending" as EntryStatus, author: "Emma Watson", updatedAt: "2026-09-03T16:45:00Z" },
+];
 
-  useEffect(() => {
-    if (selectedModel) {
-      fetchEntries(selectedModel);
-    }
-  }, [selectedModel]);
+export default function ContentManagementPage() {
+  const [selectedModel, setSelectedModel] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedEntries, setSelectedEntries] = useState<Set<string>>(new Set());
 
-  const fetchModels = async () => {
-    try {
-      const [singleRes, multiRes] = await Promise.all([
-        api.get(`/content-builder/projects/${projectId}/single-pages`).catch(() => ({ data: { data: [] } })),
-        api.get(`/content-builder/projects/${projectId}/multiple-pages`).catch(() => ({ data: { data: [] } }))
-      ]);
-      
-      const singles = (singleRes.data?.data || []).map((m: any) => ({ ...m, type: "SINGLE" }));
-      const multis = (multiRes.data?.data || []).map((m: any) => ({ ...m, type: "COLLECTION" }));
-      
-      const fetchedModels = [...singles, ...multis];
-      setModels(fetchedModels);
-      
-      if (fetchedModels.length > 0) {
-        if (modelFromQuery) {
-          const matched = fetchedModels.find(m => m.apiId === modelFromQuery || m.slug === modelFromQuery);
-          if (matched) setSelectedModel(matched.id);
-          else setSelectedModel(fetchedModels[0].id);
-        } else {
-          setSelectedModel(fetchedModels[0].id);
-        }
-      }
-    } catch (err) {
-      toast.error("Gagal memuat tipe konten");
+  const toggleSelectAll = () => {
+    if (selectedEntries.size === MOCK_ENTRIES.length) {
+      setSelectedEntries(new Set());
+    } else {
+      setSelectedEntries(new Set(MOCK_ENTRIES.map(e => e.id)));
     }
   };
 
-  const fetchEntries = async (modelId: string) => {
-    setLoading(true);
-    try {
-      const model = models.find(m => m.id === modelId);
-      if (!model) {
-        setEntries([]);
-        return;
-      }
-
-      let endpoint = `/content-builder/multiple-pages/${modelId}/entries`;
-      if (model.type === "SINGLE") {
-        endpoint = `/content-builder/single-pages/${modelId}/content`;
-      }
-      
-      const res = await api.get(endpoint).catch(() => ({ data: [] }));
-      let fetchedEntries = res.data?.data || res.data || [];
-      
-      // If SINGLE type, it might return a single object instead of array
-      if (model.type === "SINGLE" && !Array.isArray(fetchedEntries)) {
-        fetchedEntries = fetchedEntries.id ? [fetchedEntries] : [];
-      }
-      
-      setEntries(Array.isArray(fetchedEntries) ? fetchedEntries : []);
-    } catch (err) {
-      toast.error("Gagal memuat entri data");
-    } finally {
-      setLoading(false);
-    }
+  const toggleSelect = (id: string) => {
+    const next = new Set(selectedEntries);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelectedEntries(next);
   };
 
-  const openEntryDialog = (entry?: any) => {
-    const data = entry?.data || {};
-    setEditingEntry(entry || null);
-    setEntryForm({ title: data.title || "", content: data.content || data.body || "" });
-    setDialogOpen(true);
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
-
-  const saveEntry = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const model = models.find((item) => item.id === selectedModel);
-    if (!model || !entryForm.title.trim()) {
-      toast.error("Judul wajib diisi");
-      return;
-    }
-    setSaving(true);
-    try {
-      const data = { title: entryForm.title.trim(), content: entryForm.content.trim() };
-      if (model.type === "SINGLE") {
-        await api.put(`/content-builder/single-pages/${model.id}/content`, { data });
-      } else if (editingEntry) {
-        await api.put(`/content-builder/entries/${editingEntry.id}`, { data });
-      } else {
-        await api.post(`/content-builder/multiple-pages/${model.id}/entries`, { data, published: true });
-      }
-      toast.success(editingEntry ? "Konten berhasil diperbarui" : "Konten berhasil dibuat");
-      setDialogOpen(false);
-      await fetchEntries(model.id);
-    } catch (error: unknown) {
-      const responseError = error as { response?: { data?: { message?: string } } };
-      toast.error(responseError.response?.data?.message || "Gagal menyimpan konten");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const deleteEntry = async (entry: any) => {
-    const model = models.find((item) => item.id === selectedModel);
-    if (!model) return;
-    try {
-      if (model.type === "SINGLE") {
-        await api.delete(`/content-builder/single-pages/${model.id}/content`);
-      } else {
-        await api.delete(`/content-builder/entries/${entry.id}`);
-      }
-      toast.success("Konten berhasil dihapus");
-      await fetchEntries(model.id);
-    } catch (error: unknown) {
-      const responseError = error as { response?: { data?: { message?: string } } };
-      toast.error(responseError.response?.data?.message || "Gagal menghapus konten");
-    }
-  };
-
-  const togglePublish = async (entry: any) => {
-    const model = models.find((item) => item.id === selectedModel);
-    if (!model) return;
-    try {
-      if (model.type === "SINGLE") {
-        await api.patch(`/content-builder/single-pages/${model.id}/toggle-publish`);
-      } else {
-        await api.patch(`/content-builder/entries/${entry.id}/toggle-publish`);
-      }
-      toast.success(entry.published ? "Konten diubah ke Draft" : "Konten berhasil di Publish");
-      await fetchEntries(model.id);
-    } catch (error: unknown) {
-      toast.error("Gagal mengubah status publish");
-    }
-  };
-
-  if (isProjectLoading) {
-    return <div className="text-center py-12 text-muted-foreground">Memuat konteks proyek...</div>;
-  }
-
-  if (!projectId) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 px-4 border rounded-xl bg-card border-dashed">
-        <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
-          <Database className="w-8 h-8 text-muted-foreground/50" />
-        </div>
-        <h2 className="text-xl font-semibold mb-2">Proyek Tidak Ditemukan</h2>
-        <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
-          Anda harus memilih proyek terlebih dahulu melalui pemilih proyek di bilah navigasi atas, atau kembali ke halaman Proyek.
-        </p>
-        <Button className="" render={<Link href="/dashboard/projects" />}>
-          Kembali ke Proyek
-        </Button>
-      </div>
-    );
-  }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between gap-4">
+    <div className="space-y-6 w-full max-w-full">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Content Management</h1>
-          <p className="text-muted-foreground">Kelola entri data untuk tipe konten Anda</p>
+          <h1 className="text-2xl font-bold tracking-tight">Content Workspace</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Manage and organize your content entries</p>
         </div>
         
-        {models.length > 0 && (
-          <Button onClick={() => openEntryDialog()} className="">
+        <div className="flex items-center gap-3">
+          {selectedEntries.size > 0 && (
+            <Button variant="secondary" className="bg-secondary text-secondary-foreground" size="sm">
+              Bulk Actions ({selectedEntries.size})
+            </Button>
+          )}
+          <Button size="sm">
             <Plus className="w-4 h-4 mr-2" />
-            Buat Entri Baru
+            New Entry
           </Button>
-        )}
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
-        <div className="w-full md:w-64 space-y-2 flex-shrink-0 border-r border-border/40 pr-4">
-          <h3 className="font-semibold text-xs tracking-wider text-muted-foreground uppercase mb-4 px-2">Tipe Konten</h3>
-          <div className="flex flex-col space-y-1">
-            {models.map(model => (
-              <button
-                key={model.id}
-                onClick={() => setSelectedModel(model.id)}
-                className={`flex items-center gap-2 text-left px-3 py-2 rounded-lg text-sm transition-all ${
-                  selectedModel === model.id 
-                    ? "bg-primary/10 text-primary font-medium" 
-                    : "hover:bg-muted text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <FileText className="w-4 h-4 shrink-0" />
-                <span className="truncate">{model.name}</span>
-              </button>
-            ))}
-            {models.length === 0 && (
-              <div className="text-sm text-muted-foreground italic px-2 p-4 bg-muted/20 rounded border border-dashed text-center">
-                Belum ada tipe konten. Buat terlebih dahulu di Content Builder.
-              </div>
-            )}
+        {/* Sidebar Filters */}
+        <div className="w-full md:w-56 shrink-0 space-y-6">
+          <div>
+            <h3 className="font-medium text-sm text-foreground mb-3 px-2">Content Types</h3>
+            <div className="flex flex-col space-y-1">
+              {MOCK_MODELS.map(model => (
+                <button
+                  key={model.id}
+                  onClick={() => setSelectedModel(model.id)}
+                  className={cn(
+                    "flex items-center justify-between px-2 py-1.5 rounded-md text-sm transition-colors",
+                    selectedModel === model.id 
+                      ? "bg-primary/10 text-primary font-medium" 
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    <span>{model.name}</span>
+                  </div>
+                  <span className={cn(
+                    "text-xs px-1.5 py-0.5 rounded-full",
+                    selectedModel === model.id ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                  )}>
+                    {model.count}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="flex-1 bg-card border border-border/50 rounded-xl overflow-hidden flex flex-col shadow-sm">
-          <div className="p-4 border-b border-border/50 flex items-center justify-between bg-muted/10">
-            <div className="relative w-full max-w-md">
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col min-w-0 bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+          {/* Top Bar */}
+          <div className="p-4 border-b border-border flex flex-col sm:flex-row gap-4 justify-between items-center bg-muted/20">
+            <div className="relative w-full max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Cari entri berdasarkan judul..."
-                className="pl-9 h-10 bg-background border-border/50 focus-visible:ring-primary-500/30"
+                placeholder="Search entries..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 bg-background"
               />
+            </div>
+            
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button variant="outline" size="sm" className="h-9">
+                <Filter className="w-4 h-4 mr-2" />
+                Filter
+              </Button>
+              <Button variant="outline" size="sm" className="h-9">
+                <ArrowUpDown className="w-4 h-4 mr-2" />
+                Sort
+              </Button>
             </div>
           </div>
           
-          <div className="flex-1">
-            {loading ? (
-              <div className="text-center py-20 text-muted-foreground">Memuat data...</div>
-            ) : entries.length > 0 ? (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="hover:bg-transparent border-b-border/50">
-                      <TableHead className="w-[300px]">Judul</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Terakhir Diubah</TableHead>
-                      <TableHead className="text-right">Aksi</TableHead>
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30 hover:bg-muted/30 border-b border-border/50">
+                  <TableHead className="w-12 text-center">
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-input bg-transparent text-primary focus:ring-1 focus:ring-primary h-4 w-4 align-middle"
+                      checked={selectedEntries.size === MOCK_ENTRIES.length && MOCK_ENTRIES.length > 0}
+                      onChange={toggleSelectAll}
+                    />
+                  </TableHead>
+                  <TableHead className="font-medium text-foreground">Title</TableHead>
+                  <TableHead className="font-medium text-foreground">Type</TableHead>
+                  <TableHead className="font-medium text-foreground">Status</TableHead>
+                  <TableHead className="font-medium text-foreground">Author</TableHead>
+                  <TableHead className="font-medium text-foreground">Last Modified</TableHead>
+                  <TableHead className="text-right font-medium text-foreground"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {MOCK_ENTRIES.map((entry) => {
+                  const isSelected = selectedEntries.has(entry.id);
+                  return (
+                    <TableRow 
+                      key={entry.id} 
+                      className={cn(
+                        "group hover:bg-muted/40 border-b border-border/40 transition-colors cursor-default",
+                        isSelected && "bg-primary/5 hover:bg-primary/10"
+                      )}
+                    >
+                      <TableCell className="text-center">
+                        <input 
+                          type="checkbox" 
+                          className="rounded border-input bg-transparent text-primary focus:ring-1 focus:ring-primary h-4 w-4 align-middle"
+                          checked={isSelected}
+                          onChange={() => toggleSelect(entry.id)}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium text-foreground">
+                        <div className="flex flex-col">
+                          <span>{entry.title}</span>
+                          <span className="text-xs text-muted-foreground font-mono mt-0.5">{entry.id}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {entry.type}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={entry.status} className="capitalize">
+                          {entry.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {entry.author}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {formatDate(entry.updatedAt)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "h-8 w-8 text-muted-foreground hover:text-foreground focus-visible:ring-1 focus-visible:ring-primary outline-none")}>
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-40">
+                            <DropdownMenuItem className="cursor-pointer" onClick={() => toast.success("Opening editor...")}>
+                              <Edit3 className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer">
+                              <Eye className="mr-2 h-4 w-4" />
+                              Preview
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            {entry.status === "published" ? (
+                              <DropdownMenuItem className="cursor-pointer text-amber-500 focus:text-amber-600 focus:bg-amber-50">
+                                Unpublish
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem className="cursor-pointer text-emerald-500 focus:text-emerald-600 focus:bg-emerald-50">
+                                Publish
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10" onClick={() => toast.success("Entry deleted")}>
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {entries.map((entry) => {
-                      const title = entry.data?.title || entry.data?.name || "Tanpa Judul";
-                      const dateStr = entry.updatedAt ? new Date(entry.updatedAt).toLocaleDateString("id-ID", { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleDateString("id-ID");
-                      const isPublished = entry.published !== false; // default true in our demo
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
 
-                      return (
-                        <TableRow key={entry.id} className="group border-b-border/40 hover:bg-muted/30">
-                          <TableCell className="font-medium text-foreground">
-                            {title}
-                            <div className="text-xs text-muted-foreground font-mono mt-1 opacity-50 group-hover:opacity-100 transition-opacity">ID: {entry.id.substring(0, 8)}</div>
-                          </TableCell>
-                          <TableCell>
-                            <button onClick={() => togglePublish(entry)} className="outline-none focus:ring-2 focus:ring-primary-500/50 rounded-full">
-                              <Badge variant="outline" className={`transition-colors cursor-pointer ${isPublished ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20" : "bg-muted text-muted-foreground border-border/50 hover:bg-muted/80"}`}>
-                                {isPublished ? <CheckCircle2 className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
-                                {isPublished ? "Published" : "Draft"}
-                              </Badge>
-                            </button>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground text-sm">{dateStr}</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10" aria-label="Edit konten" onClick={() => openEntryDialog(entry)}>
-                                <Edit3 className="w-4 h-4" />
-                              </Button>
-                              <ConfirmationDialog
-                                title="Hapus Entri"
-                                description={`Apakah Anda yakin ingin menghapus "${title}"? Data ini tidak dapat dikembalikan.`}
-                                confirmText="Hapus"
-                                variant="destructive"
-                                onConfirm={() => deleteEntry(entry)}
-                                trigger={
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" aria-label="Hapus konten">
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                }
-                              />
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 px-4">
-                <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
-                  <Database className="w-8 h-8 text-muted-foreground/50" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Belum ada entri</h3>
-                <p className="text-muted-foreground text-sm max-w-sm text-center mb-6">
-                  Tipe konten ini belum memiliki data. Buat entri pertama untuk mulai mengelola konten.
-                </p>
-                <Button onClick={() => openEntryDialog()} className=" shadow-sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Buat Entri Pertama
+          {/* Pagination */}
+          <div className="p-4 border-t border-border flex items-center justify-between text-sm text-muted-foreground bg-muted/10">
+            <div>
+              Showing <span className="font-medium text-foreground">1</span> to <span className="font-medium text-foreground">10</span> of <span className="font-medium text-foreground">248</span> entries
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="h-8 w-8 p-0" disabled>
+                <ChevronLeft className="h-4 w-4" />
+                <span className="sr-only">Previous page</span>
+              </Button>
+              <div className="flex items-center gap-1">
+                <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-primary text-primary-foreground border-primary hover:bg-primary/90 hover:text-primary-foreground">
+                  1
+                </Button>
+                <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                  2
+                </Button>
+                <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                  3
+                </Button>
+                <span className="px-2">...</span>
+                <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                  25
                 </Button>
               </div>
-            )}
+              <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                <ChevronRight className="h-4 w-4" />
+                <span className="sr-only">Next page</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{editingEntry ? "Edit Konten" : "Buat Konten Baru"}</DialogTitle>
-            <DialogDescription>Masukkan data untuk entri konten ini.</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={saveEntry} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="entry-title" className="text-sm font-medium">Judul *</label>
-              <Input 
-                id="entry-title" 
-                value={entryForm.title} 
-                onChange={(event) => setEntryForm({ ...entryForm, title: event.target.value })} 
-                className="h-11"
-                placeholder="Masukkan judul..."
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="entry-content" className="text-sm font-medium">Isi Konten (JSON/Teks)</label>
-              <Textarea 
-                id="entry-content" 
-                rows={8} 
-                value={entryForm.content} 
-                onChange={(event) => setEntryForm({ ...entryForm, content: event.target.value })} 
-                className="font-mono text-sm"
-                placeholder="Tulis konten..."
-              />
-            </div>
-            <DialogFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Batal</Button>
-              <Button type="submit" disabled={saving} className="bg-primary-600 text-white hover:bg-primary-700">
-                {saving ? "Menyimpan..." : "Simpan Konten"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
-  );
-}
-
-export default function ContentManagementPage() {
-  return (
-    <Suspense fallback={<div className="text-center py-12">Memuat...</div>}>
-      <ContentManagementContent />
-    </Suspense>
   );
 }

@@ -37,25 +37,37 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 const mainNavItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Organizations", url: "/dashboard/organizations", icon: Building2 },
-  { title: "Projects", url: "/dashboard/projects", icon: FolderKanban },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, accent: "primary" },
+  { title: "Organizations", url: "/dashboard/organizations", icon: Building2, accent: "sky" },
+  { title: "Projects", url: "/dashboard/projects", icon: FolderKanban, accent: "indigo" },
 ];
 
 const contentNavItems = [
-  { title: "Content Builder", url: "/dashboard/content-builder", icon: Blocks },
-  { title: "Content Management", url: "/dashboard/content-management", icon: Database },
-  { title: "Media Library", url: "/dashboard/media", icon: Images },
-  { title: "Workflow", url: "/dashboard/workflow", icon: GitBranch },
+  { title: "Content Builder", url: "/dashboard/content-builder", icon: Blocks, accent: "cyan" },
+  { title: "Content Management", url: "/dashboard/content-management", icon: Database, accent: "emerald" },
+  { title: "Media Library", url: "/dashboard/media", icon: Images, accent: "orange" },
+  { title: "Workflow", url: "/dashboard/workflow", icon: GitBranch, accent: "purple" },
 ];
 
 const settingsNavItems = [
-  { title: "Plans & Billing", url: "/dashboard/billing", icon: CreditCard },
-  { title: "Collaborators", url: "/dashboard/collaborators", icon: Users },
-  { title: "Invitations", url: "/dashboard/invitations", icon: Mail },
-  { title: "API Tokens", url: "/dashboard/api-tokens", icon: KeyRound },
-  { title: "Settings", url: "/dashboard/profile", icon: Settings },
+  { title: "Plans & Billing", url: "/dashboard/billing", icon: CreditCard, accent: "amber" },
+  { title: "Collaborators", url: "/dashboard/collaborators", icon: Users, accent: "primary" },
+  { title: "Invitations", url: "/dashboard/invitations", icon: Mail, accent: "primary" },
+  { title: "API Tokens", url: "/dashboard/api-tokens", icon: KeyRound, accent: "primary" },
+  { title: "Settings", url: "/dashboard/profile", icon: Settings, accent: "primary" },
 ];
+
+/* ── Accent Map ── */
+const accentMap: Record<string, { bg: string; text: string; shadow: string; iconBg: string }> = {
+  primary: { bg: "bg-primary/[0.12]", text: "text-primary", shadow: "shadow-primary", iconBg: "bg-primary/20" },
+  sky: { bg: "bg-sky-500/[0.12]", text: "text-sky-400", shadow: "shadow-sky-500", iconBg: "bg-sky-500/20" },
+  indigo: { bg: "bg-indigo-500/[0.12]", text: "text-indigo-400", shadow: "shadow-indigo-500", iconBg: "bg-indigo-500/20" },
+  cyan: { bg: "bg-cyan-500/[0.12]", text: "text-cyan-400", shadow: "shadow-cyan-500", iconBg: "bg-cyan-500/20" },
+  emerald: { bg: "bg-emerald-500/[0.12]", text: "text-emerald-400", shadow: "shadow-emerald-500", iconBg: "bg-emerald-500/20" },
+  orange: { bg: "bg-orange-500/[0.12]", text: "text-orange-400", shadow: "shadow-orange-500", iconBg: "bg-orange-500/20" },
+  purple: { bg: "bg-purple-500/[0.12]", text: "text-purple-400", shadow: "shadow-purple-500", iconBg: "bg-purple-500/20" },
+  amber: { bg: "bg-amber-500/[0.12]", text: "text-amber-400", shadow: "shadow-amber-500", iconBg: "bg-amber-500/20" },
+};
 
 /* ── Shared nav item renderer ── */
 function NavSection({
@@ -82,6 +94,9 @@ function NavSection({
             const active =
               pathname === item.url ||
               (item.url !== "/dashboard" && pathname.startsWith(item.url + "/"));
+            
+            const accent = accentMap[item.accent || "primary"];
+
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
@@ -92,7 +107,7 @@ function NavSection({
                   className={cn(
                     "group/nav relative flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-150",
                     active
-                      ? "bg-primary/[0.12] text-primary shadow-[inset_3px_0_0_0] shadow-primary"
+                      ? `${accent.bg} ${accent.text} shadow-[inset_3px_0_0_0] ${accent.shadow}`
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                   )}
                 >
@@ -100,7 +115,7 @@ function NavSection({
                     className={cn(
                       "flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors duration-150",
                       active
-                        ? "bg-primary/20 text-primary"
+                        ? `${accent.iconBg} ${accent.text}`
                         : "bg-sidebar-accent/60 text-muted-foreground group-hover/nav:bg-sidebar-accent group-hover/nav:text-sidebar-foreground"
                     )}
                   >

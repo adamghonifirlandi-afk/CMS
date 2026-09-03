@@ -32,11 +32,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { FolderKanban, Plus, ExternalLink, Globe, LayoutTemplate, Building2, Trash2, Settings } from "lucide-react";
+import { FolderKanban, Plus, ExternalLink, Globe, LayoutTemplate, Building2, Trash2, Settings, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useActiveProject } from "@/components/active-project-provider";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { cn } from "@/lib/utils";
 
 interface Project {
   id: string;
@@ -95,7 +96,7 @@ function ProjectsContent() {
         setFormData(prev => ({ ...prev, organizationId: orgs[0].id }));
       }
     } catch {
-      toast.error("Gagal memuat data proyek");
+      toast.error("Failed to load projects");
     } finally {
       setLoading(false);
     }
@@ -108,20 +109,18 @@ function ProjectsContent() {
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.organizationId) {
-      toast.error("Nama proyek dan organisasi wajib diisi");
+      toast.error("Project name and organization are required");
       return;
     }
     setCreating(true);
     try {
       await api.post("/projects", formData);
-      toast.success("Proyek berhasil dibuat");
+      toast.success("Project created successfully");
       setIsDialogOpen(false);
       setFormData({ ...formData, name: "", description: "" });
       fetchData();
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Gagal membuat proyek";
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      toast.error(axiosErr.response?.data?.message || message);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to create project");
     } finally {
       setCreating(false);
     }
@@ -130,13 +129,13 @@ function ProjectsContent() {
   const handleDelete = async (id: string) => {
     try {
       await api.delete(`/projects/${id}`);
-      toast.success("Proyek berhasil dihapus");
+      toast.success("Project deleted");
       if (activeProject?.id === id) {
         clearProject();
       }
       fetchData();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Gagal menghapus proyek");
+      toast.error(err.response?.data?.message || "Failed to delete project");
     }
   };
 
@@ -146,37 +145,39 @@ function ProjectsContent() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="mx-auto max-w-[1440px] space-y-8 animate-enter">
+      {/* ── Header ── */}
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
-          <p className="text-muted-foreground">
-            {orgFilter ? "Proyek dalam organisasi terpilih" : "Kelola semua proyek headless CMS Anda"}
+          <h1 className="text-3xl font-semibold tracking-tight">Projects</h1>
+          <p className="mt-1 text-muted-foreground">
+            {orgFilter ? "Projects in selected organization" : "Manage all your headless CMS projects"}
           </p>
         </div>
+        
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger render={
-            <Button className="">
-              <Plus className="w-4 h-4 mr-2" /> Buat Proyek
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> New Project
             </Button>
           } />
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Buat Proyek Baru</DialogTitle>
+              <DialogTitle>Create New Project</DialogTitle>
               <DialogDescription>
-                Proyek adalah wadah untuk konten, media, dan API Anda.
+                A project is the container for your content models, entries, and assets.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateProject}>
-              <div className="space-y-4 py-4">
+              <div className="space-y-5 py-5">
                 <div className="space-y-2">
-                  <Label htmlFor="org">Organisasi *</Label>
+                  <Label htmlFor="org">Organization *</Label>
                   <Select 
                     value={formData.organizationId} 
                     onValueChange={(val) => setFormData({...formData, organizationId: val || ""})}
                   >
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Pilih Organisasi" />
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="Select Organization" />
                     </SelectTrigger>
                     <SelectContent>
                       {organizations.map(org => (
@@ -186,35 +187,35 @@ function ProjectsContent() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nama Proyek *</Label>
+                  <Label htmlFor="name">Project Name *</Label>
                   <Input
                     id="name"
-                    placeholder="Contoh: Blog E-commerce"
+                    placeholder="e.g. E-commerce Blog"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="h-11"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="desc">Deskripsi</Label>
+                  <Label htmlFor="desc">Description</Label>
                   <Textarea
                     id="desc"
-                    placeholder="Deskripsi singkat proyek ini..."
+                    className="resize-none"
+                    placeholder="Brief description of this project..."
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="template">Template Dasar</Label>
+                  <Label htmlFor="template">Base Template</Label>
                   <Select 
                     value={formData.template} 
                     onValueChange={(val) => setFormData({...formData, template: val || ""})}
                   >
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Pilih Template" />
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="Select Template" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="BLANK">Kosong (Blank)</SelectItem>
+                      <SelectItem value="BLANK">Blank</SelectItem>
                       <SelectItem value="BLOG">Blog Template</SelectItem>
                       <SelectItem value="PORTFOLIO">Portfolio</SelectItem>
                       <SelectItem value="ECOMMERCE">E-Commerce</SelectItem>
@@ -224,10 +225,10 @@ function ProjectsContent() {
               </div>
               <DialogFooter>
                 <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>
-                  Batal
+                  Cancel
                 </Button>
-                <Button type="submit" disabled={creating} className="">
-                  {creating ? "Menyimpan..." : "Buat Proyek"}
+                <Button type="submit" disabled={creating}>
+                  {creating ? "Creating..." : "Create Project"}
                 </Button>
               </DialogFooter>
             </form>
@@ -236,86 +237,99 @@ function ProjectsContent() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-muted-foreground">Memuat...</div>
+        <div className="flex min-h-[300px] items-center justify-center text-sm text-muted-foreground">Loading projects...</div>
       ) : projects.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => {
             const org = organizations.find(o => o.id === project.organizationId);
             const isActive = activeProject?.id === project.id;
 
             return (
-              <Card key={project.id} className={`group relative overflow-hidden transition-all flex flex-col ${isActive ? 'border-primary shadow-sm shadow-primary/10' : 'border-border/50 hover:border-primary/30 hover:shadow-sm'}`}>
+              <Card 
+                key={project.id} 
+                className={cn(
+                  "group relative flex flex-col overflow-hidden bg-card/90 transition-all duration-200",
+                  isActive 
+                    ? "border-primary/50 shadow-md shadow-primary/10 ring-1 ring-primary/20" 
+                    : "border-border/50 hover:border-primary/30 hover:shadow-sm hover:ring-1 hover:ring-primary/20"
+                )}
+              >
                 <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Badge variant={project.status === "ACTIVE" ? "default" : "secondary"} className={project.status === "ACTIVE" ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20" : ""}>
+                      <Badge variant={project.status === "ACTIVE" ? "active" : "draft"}>
                         {project.status || "ACTIVE"}
                       </Badge>
                       {isActive && (
-                        <Badge variant="outline" className="border-primary text-primary bg-primary/5">Active</Badge>
+                        <div className="flex h-5 items-center rounded-full bg-primary px-2 text-[10px] font-medium text-primary-foreground">
+                          Current
+                        </div>
                       )}
                     </div>
                     
                     <div className="flex items-center gap-1">
                       <ConfirmationDialog
-                        title="Hapus Proyek"
-                        description={`Apakah Anda yakin ingin menghapus proyek "${project.name}"? Semua model konten, data, dan media di dalamnya akan terhapus secara permanen.`}
-                        confirmText="Hapus"
+                        title="Delete Project"
+                        description={`Are you sure you want to delete "${project.name}"? All content models, entries, and media will be permanently deleted.`}
+                        confirmText="Delete"
                         variant="destructive"
                         onConfirm={() => handleDelete(project.id)}
                         trigger={
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Trash2 className="w-4 h-4" />
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100">
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         }
                       />
-                      <Button variant="ghost" size="icon" className="h-8 w-8" render={<Link href={`/dashboard/projects/${project.id}/settings`} />}>
-                        <Settings className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground transition-opacity opacity-0 group-hover:opacity-100 hover:text-foreground" render={<Link href={`/dashboard/projects/${project.id}/settings`} />}>
+                        <Settings className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                   
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
-                      <FolderKanban className="w-5 h-5" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20">
+                      <FolderKanban className="h-5 w-5" />
                     </div>
-                    <div>
-                      <CardTitle className="text-xl line-clamp-1">{project.name}</CardTitle>
-                      <CardDescription className="line-clamp-2 mt-1 min-h-[40px]">
-                        {project.description || "Tidak ada deskripsi proyek."}
+                    <div className="pt-0.5">
+                      <CardTitle className="line-clamp-1 text-lg font-semibold tracking-tight">{project.name}</CardTitle>
+                      <CardDescription className="mt-1 line-clamp-2 min-h-[40px] text-xs">
+                        {project.description || "No project description provided."}
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="flex-1 flex flex-col justify-end">
-                  <div className="p-3 rounded-lg bg-muted/30 border border-border/50 space-y-2">
+                
+                <CardContent className="flex-1 pb-4 pt-0">
+                  <div className="space-y-2 rounded-lg bg-muted/40 p-3 ring-1 ring-border/50">
                     <div className="flex items-center text-xs text-muted-foreground">
-                      <Building2 className="w-3.5 h-3.5 mr-2 text-muted-foreground/70" />
+                      <Building2 className="mr-2 h-3.5 w-3.5 text-muted-foreground/60" />
                       <span className="truncate">{org?.name || "Unknown Org"}</span>
                     </div>
                     {project.customDomain && (
                       <div className="flex items-center text-xs text-muted-foreground">
-                        <Globe className="w-3.5 h-3.5 mr-2 text-blue-500/70" />
-                        <a href={`https://${project.customDomain}`} target="_blank" rel="noreferrer" className="hover:underline hover:text-blue-500 truncate">
+                        <Globe className="mr-2 h-3.5 w-3.5 text-sky-400" />
+                        <a href={`https://${project.customDomain}`} target="_blank" rel="noreferrer" className="truncate hover:text-sky-400 hover:underline">
                           {project.customDomain}
                         </a>
                       </div>
                     )}
                     {project.template && project.template !== "BLANK" && (
                       <div className="flex items-center text-xs text-muted-foreground">
-                        <LayoutTemplate className="w-3.5 h-3.5 mr-2 text-muted-foreground/70" />
+                        <LayoutTemplate className="mr-2 h-3.5 w-3.5 text-emerald-500/70" />
                         <span className="truncate capitalize">{project.template.toLowerCase()} Template</span>
                       </div>
                     )}
                   </div>
                 </CardContent>
-                <CardFooter className="pt-2 pb-6 px-6">
+                
+                <CardFooter className="pt-0 pb-5">
                   <Button 
-                    variant={isActive ? "secondary" : "default"} 
-                    className={isActive ? "w-full" : "w-full "} 
+                    variant={isActive ? "outline" : "default"} 
+                    className="w-full group/btn" 
                     onClick={() => handleOpenCMS(project)}
                   >
-                    {isActive ? "Lanjutkan di CMS" : "Buka CMS"}
+                    {isActive ? "Continue in CMS" : "Open CMS"}
+                    {!isActive && <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-0.5" />}
                   </Button>
                 </CardFooter>
               </Card>
@@ -323,17 +337,17 @@ function ProjectsContent() {
           })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 px-4 border rounded-xl bg-card border-dashed">
-          <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
-            <FolderKanban className="w-8 h-8 text-muted-foreground/50" />
+        <div className="flex min-h-[400px] flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card/30 p-8 text-center animate-in fade-in-50 zoom-in-95 duration-200">
+          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/50 ring-1 ring-border/50">
+            <FolderKanban className="h-10 w-10 text-muted-foreground/50" />
           </div>
-          <h3 className="text-xl font-semibold mb-2">Belum ada proyek</h3>
-          <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
-            Mulai kelola konten dengan membuat proyek CMS pertama Anda di dalam organisasi.
+          <h3 className="text-xl font-semibold tracking-tight">No projects yet</h3>
+          <p className="mb-8 mt-2 max-w-sm text-sm text-muted-foreground">
+            Get started by creating your first headless CMS project inside an organization.
           </p>
-          <Button onClick={() => setIsDialogOpen(true)} className="">
-            <Plus className="w-4 h-4 mr-2" />
-            Buat Proyek Baru
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create New Project
           </Button>
         </div>
       )}
@@ -343,7 +357,7 @@ function ProjectsContent() {
 
 export default function ProjectsPage() {
   return (
-    <Suspense fallback={<div className="text-center py-12">Memuat parameter...</div>}>
+    <Suspense fallback={<div className="flex min-h-[300px] items-center justify-center text-sm text-muted-foreground">Loading...</div>}>
       <ProjectsContent />
     </Suspense>
   );

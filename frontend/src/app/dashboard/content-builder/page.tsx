@@ -1,18 +1,16 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import api from "@/lib/api";
+import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Dialog,
@@ -23,333 +21,225 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Database, Plus, Settings2, LayoutTemplate, Layers, AlertCircle, FileType2, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { useActiveProject } from "@/components/active-project-provider";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import Link from "next/link";
+import { Blocks, Plus, Search, Filter, Layers, LayoutTemplate, Box, Trash2, Copy, Edit2 } from "lucide-react";
 
 interface Model {
   id: string;
   name: string;
   apiId: string;
-  type: string; // 'SINGLE', 'COLLECTION', 'COMPONENT'
-  description?: string;
-  _count?: {
-    fields?: number;
-    entries?: number;
+  type: string;
+  description: string;
+  _count: {
+    fields: number;
+    entries: number;
   };
+  lastUpdated: string;
 }
 
-function ContentBuilderContent() {
-  const { activeProject, isLoading: isProjectLoading } = useActiveProject();
-  const projectId = activeProject?.id;
-
-  const [models, setModels] = useState<Model[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    slug: "",
+const mockModels: Model[] = [
+  {
+    id: "1",
+    name: "Blog Post",
+    apiId: "blog-post",
     type: "COLLECTION",
-    description: "",
-  });
-
-  const fetchModels = async () => {
-    if (!projectId) return;
-    setLoading(true);
-    try {
-      const [singleRes, multiRes, compRes] = await Promise.all([
-        api.get(`/content-builder/projects/${projectId}/single-pages`).catch(() => ({ data: { data: [] } })),
-        api.get(`/content-builder/projects/${projectId}/multiple-pages`).catch(() => ({ data: { data: [] } })),
-        api.get(`/content-builder/projects/${projectId}/components`).catch(() => ({ data: { data: [] } }))
-      ]);
-      
-      const singles = (singleRes.data?.data || []).map((m: any) => ({ ...m, type: "SINGLE", apiId: m.apiId || m.slug }));
-      const multis = (multiRes.data?.data || []).map((m: any) => ({ ...m, type: "COLLECTION", apiId: m.apiId || m.slug }));
-      const comps = (compRes.data?.data || []).map((m: any) => ({ ...m, type: "COMPONENT", apiId: m.apiId || m.slug }));
-      
-      setModels([...singles, ...multis, ...comps]);
-    } catch (err) {
-      toast.error("Gagal memuat model/tipe konten");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (projectId) {
-      fetchModels();
-    }
-  }, [projectId]);
-
-  const handleSlugify = (text: string) => {
-    return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-  };
-
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.value;
-    setFormData({
-      ...formData,
-      name,
-      slug: handleSlugify(name),
-    });
-  };
-
-  const handleCreateModel = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim() || !formData.slug.trim()) {
-      toast.error("Nama dan Slug wajib diisi");
-      return;
-    }
-    setCreating(true);
-    try {
-      let endpoint = `/content-builder/projects/${projectId}/multiple-pages`;
-      if (formData.type === "SINGLE") endpoint = `/content-builder/projects/${projectId}/single-pages`;
-      if (formData.type === "COMPONENT") endpoint = `/content-builder/projects/${projectId}/components`;
-      
-      // We pass apiId to match backend Prisma schema (which uses apiId, not slug)
-      const payload = {
-        name: formData.name,
-        apiId: formData.slug,
-        slug: formData.slug, // Pass both just in case
-        description: formData.description,
-      };
-
-      await api.post(endpoint, payload);
-      toast.success("Tipe konten berhasil dibuat");
-      setIsDialogOpen(false);
-      setFormData({ name: "", slug: "", type: "COLLECTION", description: "" });
-      fetchModels();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Gagal membuat tipe konten");
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleDeleteModel = async (id: string, type: string) => {
-    try {
-      let endpoint = `/content-builder/multiple-pages/${id}`;
-      if (type === "SINGLE") endpoint = `/content-builder/single-pages/${id}`;
-      if (type === "COMPONENT") endpoint = `/content-builder/components/${id}`;
-
-      await api.delete(endpoint);
-      toast.success("Tipe konten berhasil dihapus");
-      fetchModels();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Gagal menghapus tipe konten");
-    }
-  };
-
-  if (isProjectLoading) {
-    return <div className="text-center py-12 text-muted-foreground">Memuat konteks proyek...</div>;
+    description: "Standard article for the company blog",
+    _count: { fields: 12, entries: 45 },
+    lastUpdated: "2 hours ago"
+  },
+  {
+    id: "2",
+    name: "Landing Page",
+    apiId: "landing-page",
+    type: "COLLECTION",
+    description: "Marketing landing pages with flexible components",
+    _count: { fields: 18, entries: 12 },
+    lastUpdated: "5 hours ago"
+  },
+  {
+    id: "3",
+    name: "Product",
+    apiId: "product",
+    type: "COLLECTION",
+    description: "E-commerce product catalog items",
+    _count: { fields: 24, entries: 128 },
+    lastUpdated: "1 day ago"
+  },
+  {
+    id: "4",
+    name: "Author",
+    apiId: "author",
+    type: "COLLECTION",
+    description: "Writers and contributors for the blog",
+    _count: { fields: 6, entries: 8 },
+    lastUpdated: "3 days ago"
+  },
+  {
+    id: "5",
+    name: "Category",
+    apiId: "category",
+    type: "COLLECTION",
+    description: "Taxonomy for grouping blog posts",
+    _count: { fields: 4, entries: 15 },
+    lastUpdated: "1 week ago"
+  },
+  {
+    id: "6",
+    name: "Global Navigation",
+    apiId: "global-navigation",
+    type: "SINGLE",
+    description: "Header and footer menu links",
+    _count: { fields: 8, entries: 1 },
+    lastUpdated: "2 weeks ago"
+  },
+  {
+    id: "7",
+    name: "SEO Meta",
+    apiId: "seo-meta",
+    type: "COMPONENT",
+    description: "Reusable SEO metadata fields for all pages",
+    _count: { fields: 5, entries: 0 },
+    lastUpdated: "1 month ago"
   }
+];
 
-  if (!projectId) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 px-4 border rounded-xl bg-card border-dashed">
-        <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
-          <AlertCircle className="w-8 h-8 text-muted-foreground/50" />
-        </div>
-        <h2 className="text-xl font-semibold mb-2">Proyek Tidak Ditemukan</h2>
-        <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
-          Anda harus memilih proyek terlebih dahulu melalui pemilih proyek di bilah navigasi atas, atau kembali ke halaman Proyek.
-        </p>
-        <Button className="" render={<Link href="/dashboard/projects" />}>
-          Kembali ke Proyek
-        </Button>
-      </div>
-    );
-  }
+export default function ContentBuilderPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredModels = mockModels.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
+    <div className="space-y-8 max-w-7xl mx-auto pb-10">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Database className="w-6 h-6 text-primary" /> Content Builder
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Blocks className="w-8 h-8 text-primary" /> Content Models
           </h1>
-          <p className="text-muted-foreground">Rancang struktur data dan API untuk proyek CMS Anda</p>
+          <p className="text-muted-foreground mt-1">Design your content structures and API schema</p>
         </div>
 
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog>
           <DialogTrigger render={
-            <Button className="">
-              <Plus className="w-4 h-4 mr-2" /> Buat Tipe Konten
+            <Button>
+              <Plus className="w-4 h-4 mr-2" /> Create Model
             </Button>
           } />
           <DialogContent className="sm:max-w-[475px]">
             <DialogHeader>
-              <DialogTitle>Tipe Konten Baru</DialogTitle>
+              <DialogTitle>Create Content Model</DialogTitle>
               <DialogDescription>
-                Pilih jenis tipe konten: Collection (banyak entri) atau Single (satu entri unik).
+                Define a new structure for your content.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleCreateModel}>
-              <div className="space-y-4 py-4">
-                <Tabs value={formData.type} onValueChange={(val) => setFormData({ ...formData, type: val })}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="COLLECTION">Collection</TabsTrigger>
-                    <TabsTrigger value="SINGLE">Single Type</TabsTrigger>
-                    <TabsTrigger value="COMPONENT">Component</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="COLLECTION" className="text-xs text-muted-foreground pt-2">
-                    Cocok untuk konten berulang: Blog posts, produk, portofolio, event, dll.
-                  </TabsContent>
-                  <TabsContent value="SINGLE" className="text-xs text-muted-foreground pt-2">
-                    Cocok untuk konten unik tunggal: Halaman Homepage, About Us, Global SEO.
-                  </TabsContent>
-                  <TabsContent value="COMPONENT" className="text-xs text-muted-foreground pt-2">
-                    Cocok untuk blok modular: Hero section, feature card, SEO meta group.
-                  </TabsContent>
-                </Tabs>
-                
-                <div className="space-y-2 pt-2">
-                  <Label htmlFor="name">Nama Tipe Konten (Display Name)</Label>
-                  <Input
-                    id="name"
-                    placeholder="Contoh: Artikel Blog"
-                    value={formData.name}
-                    onChange={handleNameChange}
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="slug">API Slug (UID)</Label>
-                  <Input
-                    id="slug"
-                    placeholder="artikel-blog"
-                    value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    className="h-11"
-                  />
-                  <p className="text-[10px] text-muted-foreground">Endpoint API akan berupa: /api/v1/content/{formData.slug}</p>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>
-                  Batal
-                </Button>
-                <Button type="submit" disabled={creating} className="">
-                  {creating ? "Menyimpan..." : "Buat Model"}
-                </Button>
-              </DialogFooter>
-            </form>
+            <div className="py-4 text-sm text-muted-foreground">
+              (Creation form simulated in this demo)
+            </div>
+            <DialogFooter>
+              <Button variant="outline">Cancel</Button>
+              <Button>Create</Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      {loading ? (
-        <div className="text-center py-12 text-muted-foreground">Memuat struktur konten...</div>
-      ) : models.length > 0 ? (
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="all">Semua Tipe</TabsTrigger>
-            <TabsTrigger value="COLLECTION">Collections</TabsTrigger>
-            <TabsTrigger value="SINGLE">Single Types</TabsTrigger>
-            <TabsTrigger value="COMPONENT">Components</TabsTrigger>
-          </TabsList>
-
-          {["all", "COLLECTION", "SINGLE", "COMPONENT"].map(tabValue => (
-            <TabsContent key={tabValue} value={tabValue} className="mt-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {models.filter(m => tabValue === "all" || m.type === tabValue).map((model) => (
-                  <Card key={model.id} className="group relative overflow-hidden border-border/50 hover:border-primary/30 hover:shadow-sm transition-all flex flex-col">
-                    <CardHeader className="pb-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <Badge variant="outline" className={`font-medium ${
-                          model.type === 'COLLECTION' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 
-                          model.type === 'SINGLE' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
-                          'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                        }`}>
-                          {model.type === 'COLLECTION' ? <Layers className="w-3 h-3 mr-1.5" /> : 
-                           model.type === 'SINGLE' ? <LayoutTemplate className="w-3 h-3 mr-1.5" /> :
-                           <FileType2 className="w-3 h-3 mr-1.5" />}
-                          {model.type === 'COLLECTION' ? 'Collection' : model.type === 'SINGLE' ? 'Single' : 'Component'}
-                        </Badge>
-                        <div className="flex items-center gap-1">
-                          <ConfirmationDialog
-                            title="Hapus Model Konten"
-                            description={`Apakah Anda yakin ingin menghapus model "${model.name}"? Semua entri konten yang terkait juga akan terhapus.`}
-                            confirmText="Hapus"
-                            variant="destructive"
-                            onConfirm={() => handleDeleteModel(model.id, model.type)}
-                            trigger={
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            }
-                          />
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Settings2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                          </Button>
-                        </div>
-                      </div>
-                      <CardTitle className="text-xl line-clamp-1">{model.name}</CardTitle>
-                      <CardDescription className="font-mono text-xs mt-2 bg-muted/50 p-1.5 rounded border border-border/50 truncate">
-                        /api/.../{model.apiId}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1">
-                       <div className="grid grid-cols-2 gap-4 mt-2">
-                        <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                          <div className="flex items-center text-xs text-muted-foreground">
-                            Fields
-                          </div>
-                          <span className="font-semibold text-lg">{model._count?.fields || 0}</span>
-                        </div>
-                        {model.type === 'COLLECTION' && (
-                          <div className="flex flex-col gap-1 p-3 rounded-lg bg-muted/30 border border-border/50">
-                            <div className="flex items-center text-xs text-muted-foreground">
-                              Entries
-                            </div>
-                            <span className="font-semibold text-lg">{model._count?.entries || 0}</span>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                    <CardFooter className="pt-0 pb-6 px-6 gap-3">
-                      <Button variant="outline" className="w-full bg-background">
-                        Edit Skema
-                      </Button>
-                      <Button variant="default" className="w-full " render={<Link href={`/dashboard/content-management?model=${model.apiId}`} />}>
-                        Kelola Konten
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-20 px-4 border rounded-xl bg-card border-dashed">
-          <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
-            <Database className="w-8 h-8 text-muted-foreground/50" />
-          </div>
-          <h3 className="text-xl font-semibold mb-2">Content Builder Masih Kosong</h3>
-          <p className="text-muted-foreground text-sm max-w-md mx-auto text-center mt-1 mb-8">
-            Mulai rancang API Anda. Buat Tipe Konten (Model) pertama Anda seperti Artikel, Kategori, atau Konfigurasi Halaman.
-          </p>
-          <Button onClick={() => setIsDialogOpen(true)} className="">
-            <Plus className="w-4 h-4 mr-2" />
-            Buat Tipe Konten
+      {/* Controls */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-card p-4 rounded-xl border border-border/50">
+        <div className="relative w-full sm:w-96">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input 
+            placeholder="Search models..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 bg-background"
+          />
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button variant="outline" className="w-full sm:w-auto">
+            <Filter className="w-4 h-4 mr-2" /> Filters
           </Button>
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredModels.map((model) => (
+          <Card key={model.id} className="group relative overflow-hidden border-border/50 hover:border-primary/30 hover:shadow-md transition-all flex flex-col bg-card">
+            <CardHeader className="pb-4">
+              <div className="flex items-start justify-between mb-2">
+                <Badge variant="outline" className={`font-medium ${
+                  model.type === 'COLLECTION' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 
+                  model.type === 'SINGLE' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
+                  'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                }`}>
+                  {model.type === 'COLLECTION' ? <Layers className="w-3 h-3 mr-1.5" /> : 
+                   model.type === 'SINGLE' ? <LayoutTemplate className="w-3 h-3 mr-1.5" /> :
+                   <Box className="w-3 h-3 mr-1.5" />}
+                  {model.type === 'COLLECTION' ? 'Collection' : model.type === 'SINGLE' ? 'Single Type' : 'Component'}
+                </Badge>
+                
+                {/* Hover Actions */}
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                    <Edit2 className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              <CardTitle className="text-xl font-bold">{model.name}</CardTitle>
+              <CardDescription className="text-sm line-clamp-1 mt-1">
+                {model.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 pb-4">
+               <div className="flex gap-4 mt-2">
+                <div className="flex flex-col">
+                  <span className="text-2xl font-bold">{model._count.fields}</span>
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Fields</span>
+                </div>
+                {model.type !== 'COMPONENT' && (
+                  <>
+                    <div className="w-px bg-border/50"></div>
+                    <div className="flex flex-col">
+                      <span className="text-2xl font-bold">{model._count.entries}</span>
+                      <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Entries</span>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="mt-6 text-xs text-muted-foreground flex items-center">
+                <span className="bg-muted/50 px-2 py-1 rounded-md border border-border/50 font-mono">
+                  api/{model.apiId}
+                </span>
+                <span className="ml-auto">Updated {model.lastUpdated}</span>
+              </div>
+            </CardContent>
+            <CardFooter className="pt-0 pb-5 px-6 gap-3">
+              <Button variant="outline" className="w-full bg-background/50 hover:bg-background">
+                Edit Schema
+              </Button>
+              {model.type !== 'COMPONENT' && (
+                <Button variant="default" className="w-full" render={<Link href={`/dashboard/content-management?model=${model.apiId}`} />}>
+                  Manage Content
+                </Button>
+              )}
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+      
+      {filteredModels.length === 0 && (
+        <div className="text-center py-20 text-muted-foreground bg-card border border-dashed rounded-xl">
+          <Blocks className="w-12 h-12 mx-auto mb-4 opacity-20" />
+          <p className="text-lg font-medium text-foreground">No content models found</p>
+          <p className="text-sm">Try adjusting your search or create a new model.</p>
         </div>
       )}
     </div>
-  );
-}
-
-export default function ContentBuilderPage() {
-  return (
-    <Suspense fallback={<div className="text-center py-12">Memuat parameter...</div>}>
-      <ContentBuilderContent />
-    </Suspense>
   );
 }

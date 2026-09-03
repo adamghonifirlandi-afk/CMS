@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
-      toast.error("Email wajib diisi");
+      toast.error("Email is required");
       return;
     }
     setLoading(true);
@@ -28,10 +28,10 @@ export default function ForgotPasswordPage() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setSent(true);
-      toast.success("Link reset password telah dikirim ke email Anda");
+      toast.success("Reset link sent to your email");
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
-      const message = axiosErr.response?.data?.message || "Gagal mengirim email reset";
+      const message = axiosErr.response?.data?.message || "Failed to send reset email";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -39,32 +39,34 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-8">
-      <div className="w-full max-w-md space-y-8">
-        <div className="flex items-center gap-3 justify-center mb-4">
-          <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
-            <Layers className="w-6 h-6 text-white" />
+    <div className="min-h-screen flex items-center justify-center bg-background p-8 relative">
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0aDR2NEgzNnpNMjAgMjBoNHY0SDIweiIvPjwvZz48L2c+PC9zdmc+')] opacity-[0.03]" />
+      
+      <div className="w-full max-w-md space-y-8 animate-enter relative z-10">
+        <div className="flex items-center gap-3 justify-center mb-8">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-[0_0_24px_oklch(0.78_0.15_174_/_0.22)]">
+            <Layers className="w-6 h-6" />
           </div>
-          <span className="text-xl font-bold">Headless CMS</span>
+          <span className="text-xl font-semibold tracking-tight">Northstar CMS</span>
         </div>
 
         <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight">Lupa Password</h2>
+          <h2 className="text-3xl font-semibold tracking-tight">Forgot password?</h2>
           <p className="text-muted-foreground mt-2">
             {sent
-              ? "Cek email Anda untuk link reset password"
-              : "Masukkan email terdaftar untuk reset password"}
+              ? "Check your email for a password reset link."
+              : "Enter your registered email to reset your password."}
           </p>
         </div>
 
         {!sent ? (
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5 bg-card/50 p-6 sm:p-8 rounded-2xl border border-border/60 shadow-sm backdrop-blur-sm">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email address</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="nama@email.com"
+                placeholder="name@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-11"
@@ -74,23 +76,23 @@ export default function ForgotPasswordPage() {
 
             <Button
               type="submit"
-              className="w-full h-11  font-medium"
+              className="w-full h-11 font-medium mt-2"
               disabled={loading}
             >
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Mengirim...
+                  Sending...
                 </>
               ) : (
-                "Kirim Link Reset"
+                "Send Reset Link"
               )}
             </Button>
           </form>
         ) : (
-          <div className="text-center p-6 bg-muted/50 rounded-lg">
+          <div className="text-center p-8 bg-card/50 border border-border/60 rounded-2xl shadow-sm backdrop-blur-sm">
             <p className="text-sm text-muted-foreground">
-              Email reset password telah dikirim. Silakan cek inbox atau folder spam Anda.
+              A password reset email has been sent. Please check your inbox and spam folder.
             </p>
           </div>
         )}
@@ -98,10 +100,10 @@ export default function ForgotPasswordPage() {
         <div className="text-center">
           <Link
             href="/login"
-            className="text-sm text-primary hover:text-primary inline-flex items-center gap-1 transition-colors"
+            className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-1.5 transition-colors font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
-            Kembali ke Login
+            Back to sign in
           </Link>
         </div>
       </div>

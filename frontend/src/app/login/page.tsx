@@ -22,18 +22,18 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      toast.error("Email dan password wajib diisi");
+      toast.error("Email and password are required");
       return;
     }
     setLoading(true);
     try {
       const res = await api.post("/auth/login", { email, password });
       login(res.data.token, res.data.user);
-      toast.success("Login berhasil!");
+      toast.success("Login successful!");
       router.push("/dashboard");
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
-      const message = axiosErr.response?.data?.message || "Login gagal";
+      const message = axiosErr.response?.data?.message || "Login failed";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -55,15 +55,15 @@ export default function LoginPage() {
           <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight">
             Your content,<br />in motion.
           </h1>
-          <p className="max-w-md text-base leading-7 text-muted-foreground">
+          <p className="max-w-md text-base leading-7 text-muted-foreground mt-4">
             Shape structured content, ship across channels, and keep every team aligned from one calm workspace.
           </p>
           <div className="mt-12 grid max-w-lg grid-cols-3 gap-3">
             <div className="rounded-xl border border-border/80 bg-background/40 p-4"><div className="text-xl font-semibold text-primary">24/7</div><div className="mt-1 text-xs text-muted-foreground">Availability</div>
             </div>
-            <div className="rounded-xl border border-border/80 bg-background/40 p-4"><div className="text-xl font-semibold text-sky-300">REST</div><div className="mt-1 text-xs text-muted-foreground">API first</div>
+            <div className="rounded-xl border border-border/80 bg-background/40 p-4"><div className="text-xl font-semibold text-sky-400">REST</div><div className="mt-1 text-xs text-muted-foreground">API first</div>
             </div>
-            <div className="rounded-xl border border-border/80 bg-background/40 p-4"><div className="text-xl font-semibold text-amber-300">∞</div><div className="mt-1 text-xs text-muted-foreground">Possibilities</div>
+            <div className="rounded-xl border border-border/80 bg-background/40 p-4"><div className="text-xl font-semibold text-amber-400">∞</div><div className="mt-1 text-xs text-muted-foreground">Possibilities</div>
             </div>
           </div>
         </div>
@@ -87,21 +87,21 @@ export default function LoginPage() {
               Continue managing your projects and content.
             </p>
             {process.env.NEXT_PUBLIC_DEMO_EMAIL && (
-              <p className="mt-3 text-sm rounded-lg border border-primary-200 bg-primary-50 dark:bg-primary-950/30 px-3 py-2 text-primary-700 dark:text-primary-300">
-                Demo: gunakan email{" "}
-                <span className="font-medium">{process.env.NEXT_PUBLIC_DEMO_EMAIL}</span>
-                {" "}(password disediakan di halaman portfolio)
+              <p className="mt-4 text-sm rounded-lg border border-primary/20 bg-primary/10 px-4 py-3 text-primary">
+                Demo: use email{" "}
+                <span className="font-semibold">{process.env.NEXT_PUBLIC_DEMO_EMAIL}</span>
+                {" "}(password provided in portfolio)
               </p>
             )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email address</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="nama@email.com"
+                placeholder="name@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-11"
@@ -116,7 +116,7 @@ export default function LoginPage() {
                   href="/forgot-password"
                   className="text-sm text-primary hover:underline transition-colors"
                 >
-                  Lupa password?
+                  Forgot password?
                 </Link>
               </div>
               <div className="relative">
@@ -147,17 +147,17 @@ export default function LoginPage() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Masuk...
+                  Signing in...
                 </>
               ) : (
-                "Masuk"
+                "Sign in"
               )}
             </Button>
           </form>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
+              <span className="w-full border-t border-border/50" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
@@ -167,12 +167,12 @@ export default function LoginPage() {
           </div>
 
           <p className="text-center text-sm text-muted-foreground">
-            Belum punya akun?{" "}
+            Don't have an account?{" "}
             <Link
               href="/register"
               className="font-medium text-primary hover:underline transition-colors"
             >
-              Daftar sekarang
+              Create an account
             </Link>
           </p>
         </div>
