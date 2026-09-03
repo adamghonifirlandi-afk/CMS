@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Database, Plus, Settings2, LayoutTemplate, Layers, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { getActiveProjectId } from "@/lib/active-project";
 
 interface Model {
   id: string;
@@ -37,7 +38,7 @@ interface Model {
 
 function ContentBuilderContent() {
   const searchParams = useSearchParams();
-  const projectId = searchParams.get("projectId");
+  const projectId = getActiveProjectId(searchParams.get("projectId"));
 
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
@@ -154,15 +155,19 @@ function ContentBuilderContent() {
             <form onSubmit={handleCreateModel}>
               <div className="space-y-4 py-4">
                 <Tabs value={formData.type} onValueChange={(val) => setFormData({ ...formData, type: val })}>
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="COLLECTION">Collection</TabsTrigger>
                     <TabsTrigger value="SINGLE">Single Type</TabsTrigger>
+                    <TabsTrigger value="COMPONENT">Component</TabsTrigger>
                   </TabsList>
                   <TabsContent value="COLLECTION" className="text-xs text-muted-foreground pt-2">
                     Cocok untuk: Blog posts, produk, portofolio, dll.
                   </TabsContent>
                   <TabsContent value="SINGLE" className="text-xs text-muted-foreground pt-2">
                     Cocok untuk: Halaman Homepage, About Us, Footer config, dll.
+                  </TabsContent>
+                  <TabsContent value="COMPONENT" className="text-xs text-muted-foreground pt-2">
+                    Cocok untuk: Hero section, feature card, dan section reusable.
                   </TabsContent>
                 </Tabs>
                 

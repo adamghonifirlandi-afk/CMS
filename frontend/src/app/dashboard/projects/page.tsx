@@ -34,6 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { FolderKanban, Plus, ExternalLink, Globe, LayoutTemplate, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { setActiveProjectId } from "@/lib/active-project";
 
 interface Project {
   id: string;
@@ -250,7 +251,7 @@ function ProjectsContent() {
                       </div>
                     )}
                     <div className="pt-4 flex gap-2">
-                      <Button variant="default" className="flex-1 bg-violet-600 hover:bg-violet-700" >
+                      <Button variant="default" className="flex-1 bg-violet-600 hover:bg-violet-700" onClick={() => setActiveProjectId(project.id)}>
                         <Link href={`/dashboard/content-builder?projectId=${project.id}`}>
                           Buka CMS
                         </Link>

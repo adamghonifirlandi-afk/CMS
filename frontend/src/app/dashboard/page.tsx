@@ -133,14 +133,14 @@ export default function DashboardPage() {
     },
     {
       label: "Content Types",
-      value: "—",
+      value: "Belum ada",
       icon: FileText,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
     },
     {
       label: "Collaborators",
-      value: "—",
+      value: "Belum ada",
       icon: Users,
       color: "text-amber-500",
       bg: "bg-amber-500/10",

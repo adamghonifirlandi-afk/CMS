@@ -27,6 +27,7 @@ import {
   ImageIcon,
   GitBranch,
   Key,
+  Settings,
 } from "lucide-react";
 
 const mainNavItems = [
@@ -85,6 +86,11 @@ const settingsNavItems = [
     title: "API Tokens",
     url: "/dashboard/api-tokens",
     icon: Key,
+  },
+  {
+    title: "Settings",
+    url: "/dashboard/profile",
+    icon: Settings,
   },
 ];
 

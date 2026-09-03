@@ -13,6 +13,7 @@ import {
 import { GitBranch, Clock } from "lucide-react";
 import api from "@/lib/api";
 import { toast } from "sonner";
+import { getActiveProjectId } from "@/lib/active-project";
 
 interface WorkflowItem {
   id: string;
@@ -24,7 +25,7 @@ interface WorkflowItem {
 
 function WorkflowContent() {
   const searchParams = useSearchParams();
-  const projectId = searchParams.get("projectId");
+  const projectId = getActiveProjectId(searchParams.get("projectId"));
 
   const [workflows, setWorkflows] = useState<WorkflowItem[]>([]);
   const [loading, setLoading] = useState(false);

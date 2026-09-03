@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Image as ImageIcon, UploadCloud, Folder, Search } from "lucide-react";
 import api from "@/lib/api";
 import { toast } from "sonner";
+import { getActiveProjectId } from "@/lib/active-project";
 
 interface MediaAsset {
   id: string;
@@ -18,7 +19,7 @@ interface MediaAsset {
 
 function MediaContent() {
   const searchParams = useSearchParams();
-  const projectId = searchParams.get("projectId");
+  const projectId = getActiveProjectId(searchParams.get("projectId"));
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [organizationId, setOrganizationId] = useState<string | null>(null);

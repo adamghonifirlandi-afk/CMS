@@ -23,15 +23,29 @@ import { Database, Plus, Edit3, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { getActiveProjectId } from "@/lib/active-project";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 function ContentManagementContent() {
   const searchParams = useSearchParams();
-  const projectId = searchParams.get("projectId");
+  const projectId = getActiveProjectId(searchParams.get("projectId"));
 
   const [models, setModels] = useState<any[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [entries, setEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<any | null>(null);
+  const [entryForm, setEntryForm] = useState({ title: "", content: "" });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (projectId) {
@@ -95,6 +109,58 @@ function ContentManagementContent() {
     }
   };
 
+  const openEntryDialog = (entry?: any) => {
+    const data = entry?.data || {};
+    setEditingEntry(entry || null);
+    setEntryForm({ title: data.title || "", content: data.content || data.body || "" });
+    setDialogOpen(true);
+  };
+
+  const saveEntry = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const model = models.find((item) => item.id === selectedModel);
+    if (!model || !entryForm.title.trim()) {
+      toast.error("Judul wajib diisi");
+      return;
+    }
+    setSaving(true);
+    try {
+      const data = { title: entryForm.title.trim(), content: entryForm.content.trim() };
+      if (model.type === "SINGLE") {
+        await api.put(`/content-builder/single-pages/${model.id}/content`, { data });
+      } else if (editingEntry) {
+        await api.put(`/content-builder/entries/${editingEntry.id}`, { data });
+      } else {
+        await api.post(`/content-builder/multiple-pages/${model.id}/entries`, { data, published: true });
+      }
+      toast.success(editingEntry ? "Konten berhasil diperbarui" : "Konten berhasil dibuat");
+      setDialogOpen(false);
+      await fetchEntries(model.id);
+    } catch (error: unknown) {
+      const responseError = error as { response?: { data?: { message?: string } } };
+      toast.error(responseError.response?.data?.message || "Gagal menyimpan konten");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteEntry = async (entry: any) => {
+    const model = models.find((item) => item.id === selectedModel);
+    if (!model || !confirm("Hapus konten ini? Tindakan ini tidak dapat dibatalkan.")) return;
+    try {
+      if (model.type === "SINGLE") {
+        await api.delete(`/content-builder/single-pages/${model.id}/content`);
+      } else {
+        await api.delete(`/content-builder/entries/${entry.id}`);
+      }
+      toast.success("Konten berhasil dihapus");
+      await fetchEntries(model.id);
+    } catch (error: unknown) {
+      const responseError = error as { response?: { data?: { message?: string } } };
+      toast.error(responseError.response?.data?.message || "Gagal menghapus konten");
+    }
+  };
+
   if (!projectId) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -119,7 +185,7 @@ function ContentManagementContent() {
         </div>
         
         {models.length > 0 && (
-          <Button className="bg-violet-600 hover:bg-violet-700 text-white">
+          <Button onClick={() => openEntryDialog()} className="bg-violet-600 hover:bg-violet-700 text-white">
             <Plus className="w-4 h-4 mr-2" />
             Buat Entri Baru
           </Button>
@@ -183,10 +249,10 @@ function ContentManagementContent() {
                       </TableCell>
                       <TableCell>{new Date().toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" className="text-blue-600">
+                        <Button variant="ghost" size="icon" className="text-blue-600" aria-label="Edit konten" onClick={() => openEntryDialog(entry)}>
                           <Edit3 className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-red-600">
+                        <Button variant="ghost" size="icon" className="text-red-600" aria-label="Hapus konten" onClick={() => deleteEntry(entry)}>
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </TableCell>
@@ -201,7 +267,7 @@ function ContentManagementContent() {
                 <p className="text-muted-foreground text-sm max-w-sm mx-auto mt-1 mb-6">
                   Buat entri pertama untuk tipe konten ini.
                 </p>
-                <Button variant="outline">
+                <Button variant="outline" onClick={() => openEntryDialog()}>
                   Buat Entri Pertama
                 </Button>
               </div>
@@ -209,6 +275,20 @@ function ContentManagementContent() {
           </div>
         </div>
       </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingEntry ? "Edit konten" : "Buat konten baru"}</DialogTitle>
+            <DialogDescription>Tambahkan konten demo untuk tipe yang sedang dipilih.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={saveEntry} className="space-y-4">
+            <div className="space-y-2"><label htmlFor="entry-title" className="text-sm font-medium">Judul</label><Input id="entry-title" value={entryForm.title} onChange={(event) => setEntryForm({ ...entryForm, title: event.target.value })} /></div>
+            <div className="space-y-2"><label htmlFor="entry-content" className="text-sm font-medium">Isi konten</label><Textarea id="entry-content" rows={5} value={entryForm.content} onChange={(event) => setEntryForm({ ...entryForm, content: event.target.value })} /></div>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Batal</Button><Button type="submit" disabled={saving} className="bg-violet-600 text-white hover:bg-violet-700">{saving ? "Menyimpan..." : "Simpan"}</Button></DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

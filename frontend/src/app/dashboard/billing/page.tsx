@@ -135,6 +135,10 @@ export default function BillingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {plans.map((plan) => {
               const isCurrent = currentSub?.planId === plan.id;
+              const limits = plan.limits || {};
+              const features = plan.features && typeof plan.features === "object"
+                ? Object.keys(plan.features).filter((key) => plan.features[key] === true)
+                : [];
               return (
                 <Card key={plan.id} className={`relative flex flex-col ${isCurrent ? 'border-violet-500 ring-1 ring-violet-500' : ''}`}>
                   {isCurrent && (
@@ -149,22 +153,22 @@ export default function BillingPage() {
                   <CardContent className="flex-1">
                     <div className="mb-6">
                       <span className="text-3xl font-bold">
-                        Rp {parseInt(plan.price).toLocaleString('id-ID')}
+                        Rp {Number(plan.price || 0).toLocaleString('id-ID')}
                       </span>
-                      <span className="text-muted-foreground text-sm">/ {plan.interval}</span>
+                      <span className="text-muted-foreground text-sm">/ {plan.billingCycle === "YEARLY" ? "tahun" : "bulan"}</span>
                     </div>
                     <ul className="space-y-2 text-sm">
                       <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-500" /> Max Projects: {plan.maxProjects === -1 ? 'Unlimited' : plan.maxProjects}
+                        <Check className="w-4 h-4 text-emerald-500" /> Max Projects: {limits.projects === -1 ? 'Unlimited' : limits.projects ?? 0}
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-500" /> Max Collaborators: {plan.maxCollaborators === -1 ? 'Unlimited' : plan.maxCollaborators}
+                        <Check className="w-4 h-4 text-emerald-500" /> Max Collaborators: {limits.collaborators === -1 ? 'Unlimited' : limits.collaborators ?? 0}
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-500" /> API Requests/mo: {plan.apiRequestsPerMonth === -1 ? 'Unlimited' : plan.apiRequestsPerMonth.toLocaleString()}
+                        <Check className="w-4 h-4 text-emerald-500" /> API Requests/mo: {limits.apiCalls === -1 ? 'Unlimited' : Number(limits.apiCalls || 0).toLocaleString('id-ID')}
                       </li>
                       <li className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-emerald-500" /> Features: {Array.isArray(plan.features) ? plan.features.join(', ') : 'Basic Features'}
+                        <Check className="w-4 h-4 text-emerald-500" /> Features: {features.length > 0 ? features.join(', ') : 'Basic Features'}
                       </li>
                     </ul>
                   </CardContent>
