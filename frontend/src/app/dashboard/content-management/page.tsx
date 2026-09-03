@@ -195,7 +195,7 @@ function ContentManagementContent() {
         <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
           Anda harus memilih proyek terlebih dahulu melalui pemilih proyek di bilah navigasi atas, atau kembali ke halaman Proyek.
         </p>
-        <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-md" render={<Link href="/dashboard/projects" />}>
+        <Button className="" render={<Link href="/dashboard/projects" />}>
           Kembali ke Proyek
         </Button>
       </div>
@@ -211,7 +211,7 @@ function ContentManagementContent() {
         </div>
         
         {models.length > 0 && (
-          <Button onClick={() => openEntryDialog()} className="bg-violet-600 hover:bg-violet-700 text-white shadow-md">
+          <Button onClick={() => openEntryDialog()} className="">
             <Plus className="w-4 h-4 mr-2" />
             Buat Entri Baru
           </Button>
@@ -228,7 +228,7 @@ function ContentManagementContent() {
                 onClick={() => setSelectedModel(model.id)}
                 className={`flex items-center gap-2 text-left px-3 py-2 rounded-lg text-sm transition-all ${
                   selectedModel === model.id 
-                    ? "bg-violet-500/10 text-violet-500 font-medium" 
+                    ? "bg-primary/10 text-primary font-medium" 
                     : "hover:bg-muted text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -251,7 +251,7 @@ function ContentManagementContent() {
               <Input
                 type="search"
                 placeholder="Cari entri berdasarkan judul..."
-                className="pl-9 h-10 bg-background border-border/50 focus-visible:ring-violet-500/30"
+                className="pl-9 h-10 bg-background border-border/50 focus-visible:ring-primary-500/30"
               />
             </div>
           </div>
@@ -283,7 +283,7 @@ function ContentManagementContent() {
                             <div className="text-xs text-muted-foreground font-mono mt-1 opacity-50 group-hover:opacity-100 transition-opacity">ID: {entry.id.substring(0, 8)}</div>
                           </TableCell>
                           <TableCell>
-                            <button onClick={() => togglePublish(entry)} className="outline-none focus:ring-2 focus:ring-violet-500/50 rounded-full">
+                            <button onClick={() => togglePublish(entry)} className="outline-none focus:ring-2 focus:ring-primary-500/50 rounded-full">
                               <Badge variant="outline" className={`transition-colors cursor-pointer ${isPublished ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20" : "bg-muted text-muted-foreground border-border/50 hover:bg-muted/80"}`}>
                                 {isPublished ? <CheckCircle2 className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
                                 {isPublished ? "Published" : "Draft"}
@@ -325,7 +325,7 @@ function ContentManagementContent() {
                 <p className="text-muted-foreground text-sm max-w-sm text-center mb-6">
                   Tipe konten ini belum memiliki data. Buat entri pertama untuk mulai mengelola konten.
                 </p>
-                <Button onClick={() => openEntryDialog()} className="bg-violet-600 hover:bg-violet-700 text-white shadow-sm">
+                <Button onClick={() => openEntryDialog()} className=" shadow-sm">
                   <Plus className="w-4 h-4 mr-2" />
                   Buat Entri Pertama
                 </Button>
@@ -365,7 +365,7 @@ function ContentManagementContent() {
             </div>
             <DialogFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Batal</Button>
-              <Button type="submit" disabled={saving} className="bg-violet-600 text-white hover:bg-violet-700">
+              <Button type="submit" disabled={saving} className="bg-primary-600 text-white hover:bg-primary-700">
                 {saving ? "Menyimpan..." : "Simpan Konten"}
               </Button>
             </DialogFooter>

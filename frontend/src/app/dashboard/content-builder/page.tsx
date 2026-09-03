@@ -160,7 +160,7 @@ function ContentBuilderContent() {
         <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
           Anda harus memilih proyek terlebih dahulu melalui pemilih proyek di bilah navigasi atas, atau kembali ke halaman Proyek.
         </p>
-        <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-md" render={<Link href="/dashboard/projects" />}>
+        <Button className="" render={<Link href="/dashboard/projects" />}>
           Kembali ke Proyek
         </Button>
       </div>
@@ -172,14 +172,14 @@ function ContentBuilderContent() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Database className="w-6 h-6 text-violet-600" /> Content Builder
+            <Database className="w-6 h-6 text-primary" /> Content Builder
           </h1>
           <p className="text-muted-foreground">Rancang struktur data dan API untuk proyek CMS Anda</p>
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger render={
-            <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-md">
+            <Button className="">
               <Plus className="w-4 h-4 mr-2" /> Buat Tipe Konten
             </Button>
           } />
@@ -235,7 +235,7 @@ function ContentBuilderContent() {
                 <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>
                   Batal
                 </Button>
-                <Button type="submit" disabled={creating} className="bg-violet-600 hover:bg-violet-700 text-white">
+                <Button type="submit" disabled={creating} className="">
                   {creating ? "Menyimpan..." : "Buat Model"}
                 </Button>
               </DialogFooter>
@@ -259,7 +259,7 @@ function ContentBuilderContent() {
             <TabsContent key={tabValue} value={tabValue} className="mt-0">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {models.filter(m => tabValue === "all" || m.type === tabValue).map((model) => (
-                  <Card key={model.id} className="group relative overflow-hidden border-border/50 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/5 transition-all flex flex-col">
+                  <Card key={model.id} className="group relative overflow-hidden border-border/50 hover:border-primary/30 hover:shadow-sm transition-all flex flex-col">
                     <CardHeader className="pb-4">
                       <div className="flex items-center justify-between mb-4">
                         <Badge variant="outline" className={`font-medium ${
@@ -317,7 +317,7 @@ function ContentBuilderContent() {
                       <Button variant="outline" className="w-full bg-background">
                         Edit Skema
                       </Button>
-                      <Button variant="default" className="w-full bg-violet-600 hover:bg-violet-700" render={<Link href={`/dashboard/content-management?model=${model.apiId}`} />}>
+                      <Button variant="default" className="w-full " render={<Link href={`/dashboard/content-management?model=${model.apiId}`} />}>
                         Kelola Konten
                       </Button>
                     </CardFooter>
@@ -336,7 +336,7 @@ function ContentBuilderContent() {
           <p className="text-muted-foreground text-sm max-w-md mx-auto text-center mt-1 mb-8">
             Mulai rancang API Anda. Buat Tipe Konten (Model) pertama Anda seperti Artikel, Kategori, atau Konfigurasi Halaman.
           </p>
-          <Button onClick={() => setIsDialogOpen(true)} className="bg-violet-600 hover:bg-violet-700 text-white shadow-md">
+          <Button onClick={() => setIsDialogOpen(true)} className="">
             <Plus className="w-4 h-4 mr-2" />
             Buat Tipe Konten
           </Button>

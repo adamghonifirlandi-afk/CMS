@@ -101,7 +101,7 @@ export default function OrganizationsPage() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger render={
-            <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-md">
+            <Button className="">
               <Plus className="w-4 h-4 mr-2" /> Buat Organisasi
             </Button>
           } />
@@ -129,7 +129,7 @@ export default function OrganizationsPage() {
                 <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>
                   Batal
                 </Button>
-                <Button type="submit" disabled={creating} className="bg-violet-600 hover:bg-violet-700 text-white">
+                <Button type="submit" disabled={creating} className="">
                   {creating ? "Menyimpan..." : "Simpan"}
                 </Button>
               </DialogFooter>
@@ -143,10 +143,10 @@ export default function OrganizationsPage() {
       ) : organizations.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {organizations.map((org) => (
-            <Card key={org.id} className="group relative overflow-hidden border-border/50 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/5 transition-all flex flex-col">
+            <Card key={org.id} className="group relative overflow-hidden border-border/50 hover:border-primary/30 hover:shadow-sm transition-all flex flex-col">
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
-                  <div className="w-12 h-12 bg-violet-500/10 text-violet-500 rounded-xl flex items-center justify-center mb-3">
+                  <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-3">
                     <Building2 className="w-6 h-6" />
                   </div>
                   <div className="flex items-center gap-1">
@@ -210,7 +210,7 @@ export default function OrganizationsPage() {
           <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
             Buat organisasi pertama Anda untuk mulai berkolaborasi dan mengelola proyek bersama tim.
           </p>
-          <Button onClick={() => setIsDialogOpen(true)} className="bg-violet-600 hover:bg-violet-700 text-white shadow-md">
+          <Button onClick={() => setIsDialogOpen(true)} className="">
             <Plus className="w-4 h-4 mr-2" />
             Buat Organisasi Baru
           </Button>

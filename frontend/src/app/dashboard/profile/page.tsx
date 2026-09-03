@@ -68,7 +68,7 @@ export default function ProfilePage() {
               <Input id="country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
             </div>
             <div className="flex justify-end sm:col-span-2">
-              <Button type="submit" className="bg-violet-600 text-white hover:bg-violet-700">Simpan perubahan</Button>
+              <Button type="submit" className="bg-primary-600 text-white hover:bg-primary-700">Simpan perubahan</Button>
             </div>
           </form>
         </CardContent>

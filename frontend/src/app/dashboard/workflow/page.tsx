@@ -71,7 +71,7 @@ function WorkflowContent() {
         <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
           Anda harus memilih proyek terlebih dahulu untuk mengelola alur kerja dan persetujuan (Approval).
         </p>
-        <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-md" render={<Link href="/dashboard/projects" />}>
+        <Button className="" render={<Link href="/dashboard/projects" />}>
           Kembali ke Proyek
         </Button>
       </div>
@@ -92,11 +92,11 @@ function WorkflowContent() {
       ) : workflows.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {workflows.map((workflow) => (
-            <Card key={workflow.id} className="border-border/50 hover:border-violet-500/50 transition-colors">
+            <Card key={workflow.id} className="border-border/50 hover:border-primary/30 transition-colors">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-violet-500/10 text-violet-500 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
                       <GitBranch className="w-4 h-4" />
                     </div>
                     <span className="line-clamp-1">{workflow.name}</span>
@@ -126,7 +126,7 @@ function WorkflowContent() {
           <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
             Fitur workflow memungkinkan konten melalui tahap Draft → Review → Published. Buat workflow melalui API untuk organisasi ini.
           </p>
-          <Button variant="outline" className="text-violet-500 border-violet-500/20 hover:bg-violet-500/10">
+          <Button variant="outline" className="text-primary border-primary/20 hover:bg-primary/10">
             <GitBranch className="w-4 h-4 mr-2" />
             Dokumentasi Workflow API
           </Button>

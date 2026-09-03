@@ -50,7 +50,7 @@ export default function OrganizationSettingsPage() {
           {loading ? <p className="text-muted-foreground">Memuat...</p> : (
             <form onSubmit={handleSave} className="space-y-5">
               <div className="space-y-2"><Label htmlFor="organization-name">Nama organisasi</Label><Input id="organization-name" value={name} onChange={(e) => setName(e.target.value)} /></div>
-              <div className="flex justify-between gap-3"><Button type="button" variant="outline" onClick={() => router.back()}>Kembali</Button><Button type="submit" disabled={saving} className="bg-violet-600 text-white hover:bg-violet-700">{saving ? "Menyimpan..." : "Simpan perubahan"}</Button></div>
+              <div className="flex justify-between gap-3"><Button type="button" variant="outline" onClick={() => router.back()}>Kembali</Button><Button type="submit" disabled={saving}>{saving ? "Menyimpan..." : "Simpan perubahan"}</Button></div>
             </form>
           )}
         </CardContent>

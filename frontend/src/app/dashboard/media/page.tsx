@@ -113,7 +113,7 @@ function MediaContent() {
         <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
           Anda harus memilih proyek terlebih dahulu untuk melihat media library.
         </p>
-        <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-md" render={<Link href="/dashboard/projects" />}>
+        <Button className="" render={<Link href="/dashboard/projects" />}>
           Kembali ke Proyek
         </Button>
       </div>
@@ -138,7 +138,7 @@ function MediaContent() {
             onChange={(e) => handleUpload(e.target.files)}
           />
           <Button
-            className="bg-violet-600 hover:bg-violet-700 text-white shadow-md"
+            className=""
             disabled={uploading || !organizationId}
             onClick={() => fileInputRef.current?.click()}
           >
@@ -156,7 +156,7 @@ function MediaContent() {
             placeholder="Cari media..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-background h-10 border-border/50 focus-visible:ring-violet-500/30"
+            className="pl-9 bg-background h-10 border-border/50 focus-visible:ring-primary-500/30"
           />
         </div>
       </div>
@@ -166,7 +166,7 @@ function MediaContent() {
       ) : assets.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {assets.map((asset) => (
-            <div key={asset.id} className="group relative border border-border/50 rounded-xl overflow-hidden bg-card hover:border-violet-500/50 hover:shadow-lg transition-all">
+            <div key={asset.id} className="group relative border border-border/50 rounded-xl overflow-hidden bg-card hover:border-primary/30 hover:shadow-lg transition-all">
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-start justify-end p-2 pointer-events-none">
                 <ConfirmationDialog
                   title="Hapus Media"
@@ -213,7 +213,7 @@ function MediaContent() {
           </p>
           <Button
             variant="outline"
-            className="text-violet-500 border-violet-500/20 hover:bg-violet-500/10"
+            className="text-primary border-primary/20 hover:bg-primary/10"
             disabled={uploading}
             onClick={() => fileInputRef.current?.click()}
           >

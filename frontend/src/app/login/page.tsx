@@ -19,19 +19,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const enterDemo = () => {
-    login("demo-session", {
-      id: "user_demo",
-      fullName: "Demo User",
-      email: "demo@example.com",
-      company: "Northstar Studio",
-      job: "Owner",
-      country: "Indonesia",
-    });
-    toast.success("Demo workspace ready");
-    router.push("/dashboard");
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
@@ -100,7 +87,7 @@ export default function LoginPage() {
               Continue managing your projects and content.
             </p>
             {process.env.NEXT_PUBLIC_DEMO_EMAIL && (
-              <p className="mt-3 text-sm rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-950/30 px-3 py-2 text-violet-700 dark:text-violet-300">
+              <p className="mt-3 text-sm rounded-lg border border-primary-200 bg-primary-50 dark:bg-primary-950/30 px-3 py-2 text-primary-700 dark:text-primary-300">
                 Demo: gunakan email{" "}
                 <span className="font-medium">{process.env.NEXT_PUBLIC_DEMO_EMAIL}</span>
                 {" "}(password disediakan di halaman portfolio)
@@ -167,13 +154,6 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
-
-          <div className="rounded-xl border border-primary/25 bg-primary/5 p-4">
-            <div className="flex items-center justify-between gap-4">
-              <div><p className="text-sm font-medium">Explore the demo workspace</p><p className="mt-1 text-xs text-muted-foreground">Use a fictional account with sample content and local interactions.</p></div>
-              <Button type="button" variant="outline" className="shrink-0 border-primary/40 text-primary hover:bg-primary/10" onClick={enterDemo}>Enter demo</Button>
-            </div>
-          </div>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

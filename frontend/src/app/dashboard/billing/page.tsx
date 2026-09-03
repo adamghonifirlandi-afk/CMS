@@ -118,9 +118,9 @@ export default function BillingPage() {
         <>
           {/* Current Subscription Alert */}
           {currentSub && (
-            <div className="bg-violet-500/10 border border-violet-500/20 rounded-lg p-4 flex items-center justify-between">
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="bg-violet-500/20 p-2 rounded-full text-violet-600">
+                <div className="bg-primary-500/20 p-2 rounded-full text-primary">
                   <CreditCard className="w-5 h-5" />
                 </div>
                 <div>
@@ -140,9 +140,9 @@ export default function BillingPage() {
                 ? Object.keys(plan.features).filter((key) => plan.features[key] === true)
                 : [];
               return (
-                <Card key={plan.id} className={`relative flex flex-col ${isCurrent ? 'border-violet-500 shadow-md shadow-violet-500/10' : 'border-border/50 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/5'} transition-all`}>
+                <Card key={plan.id} className={`relative flex flex-col ${isCurrent ? 'border-primary shadow-md shadow-primary/10' : 'border-border/50 hover:border-primary/30 hover:shadow-sm'} transition-all`}>
                   {isCurrent && (
-                    <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-violet-600 text-white text-xs px-3 py-1 rounded-full font-medium shadow-sm">
+                    <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-primary-600 text-white text-xs px-3 py-1 rounded-full font-medium shadow-sm">
                       Paket Aktif
                     </div>
                   )}
@@ -174,7 +174,7 @@ export default function BillingPage() {
                   </CardContent>
                   <CardFooter>
                     <Button 
-                      className={`w-full ${isCurrent ? 'bg-muted text-muted-foreground cursor-not-allowed' : 'bg-violet-600 hover:bg-violet-700 text-white'}`}
+                      className={`w-full ${isCurrent ? 'bg-muted text-muted-foreground cursor-not-allowed' : ''}`}
                       onClick={() => !isCurrent && handleSubscribe(plan.id)}
                       disabled={isCurrent || subscribing === plan.id}
                       variant={isCurrent ? "secondary" : "default"}

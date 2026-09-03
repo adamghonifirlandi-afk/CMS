@@ -54,7 +54,7 @@ export default function ProjectSettingsPage() {
               <div className="space-y-2"><Label htmlFor="project-name">Nama proyek</Label><Input id="project-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
               <div className="space-y-2"><Label htmlFor="project-description">Deskripsi</Label><Textarea id="project-description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
               <div className="space-y-2"><Label htmlFor="project-domain">Custom domain</Label><Input id="project-domain" placeholder="demo.example.com" value={form.customDomain} onChange={(e) => setForm({ ...form, customDomain: e.target.value })} /></div>
-              <div className="flex justify-between gap-3"><Button type="button" variant="outline" onClick={() => router.back()}>Kembali</Button><Button type="submit" disabled={saving} className="bg-violet-600 text-white hover:bg-violet-700">{saving ? "Menyimpan..." : "Simpan perubahan"}</Button></div>
+              <div className="flex justify-between gap-3"><Button type="button" variant="outline" onClick={() => router.back()}>Kembali</Button><Button type="submit" disabled={saving}>{saving ? "Menyimpan..." : "Simpan perubahan"}</Button></div>
             </form>
           )}
         </CardContent>

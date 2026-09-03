@@ -21,7 +21,6 @@ export function ProjectSelector() {
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    // Fetch all projects for the selector
     api.get("/projects")
       .then((res) => {
         setProjects(res.data?.data || res.data || []);
@@ -35,50 +34,52 @@ export function ProjectSelector() {
         <Button
           variant="outline"
           role="combobox"
-          className="w-[200px] justify-between bg-card text-card-foreground border-border/40 hover:bg-accent hover:text-accent-foreground"
+          className="h-9 w-[210px] justify-between gap-2 rounded-lg border-border/60 bg-card/60 px-3 text-foreground hover:bg-accent hover:border-border transition-all"
         >
           <div className="flex items-center gap-2 truncate">
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-violet-500/10 text-violet-500">
-              <FolderKanban className="h-3.5 w-3.5" />
-            </div>
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-primary/15 text-primary">
+              <FolderKanban className="h-3 w-3" />
+            </span>
+            {activeProject && (
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
+            )}
             <span className="truncate text-sm font-medium">
-              {isLoading ? "Memuat..." : activeProject?.name || "Pilih Proyek..."}
+              {isLoading ? "Loading..." : activeProject?.name || "Select project..."}
             </span>
           </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         </Button>
       } />
       <DropdownMenuContent className="w-[240px]" align="start">
-        <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
-          Proyek Saya
+        <DropdownMenuLabel className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">
+          My Projects
         </DropdownMenuLabel>
         {projects.length === 0 ? (
-          <div className="p-2 text-sm text-muted-foreground text-center">Belum ada proyek</div>
+          <div className="px-3 py-4 text-sm text-center text-muted-foreground">No projects yet</div>
         ) : (
           projects.map((project) => (
             <DropdownMenuItem
               key={project.id}
               onClick={() => {
                 setActiveProject(project);
-                // Optionally redirect to content builder when changing projects
                 router.push("/dashboard/content-builder");
               }}
               className="flex items-center justify-between cursor-pointer"
             >
               <span className="truncate">{project.name}</span>
               {activeProject?.id === project.id && (
-                <Check className="h-4 w-4 text-violet-500" />
+                <Check className="h-4 w-4 text-primary" />
               )}
             </DropdownMenuItem>
           ))
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          className="cursor-pointer text-violet-500 focus:text-violet-600 focus:bg-violet-500/10"
+          className="cursor-pointer text-primary focus:text-primary focus:bg-primary/10"
           onClick={() => router.push("/dashboard/projects")}
         >
           <Plus className="mr-2 h-4 w-4" />
-          <span>Buat Proyek Baru</span>
+          <span>New Project</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -156,7 +156,7 @@ function ProjectsContent() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger render={
-            <Button className="bg-violet-600 hover:bg-violet-700 text-white shadow-md">
+            <Button className="">
               <Plus className="w-4 h-4 mr-2" /> Buat Proyek
             </Button>
           } />
@@ -226,7 +226,7 @@ function ProjectsContent() {
                 <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>
                   Batal
                 </Button>
-                <Button type="submit" disabled={creating} className="bg-violet-600 hover:bg-violet-700 text-white">
+                <Button type="submit" disabled={creating} className="">
                   {creating ? "Menyimpan..." : "Buat Proyek"}
                 </Button>
               </DialogFooter>
@@ -244,7 +244,7 @@ function ProjectsContent() {
             const isActive = activeProject?.id === project.id;
 
             return (
-              <Card key={project.id} className={`group relative overflow-hidden transition-all flex flex-col ${isActive ? 'border-violet-500 shadow-sm shadow-violet-500/10' : 'border-border/50 hover:border-violet-500/50 hover:shadow-lg hover:shadow-violet-500/5'}`}>
+              <Card key={project.id} className={`group relative overflow-hidden transition-all flex flex-col ${isActive ? 'border-primary shadow-sm shadow-primary/10' : 'border-border/50 hover:border-primary/30 hover:shadow-sm'}`}>
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
@@ -252,7 +252,7 @@ function ProjectsContent() {
                         {project.status || "ACTIVE"}
                       </Badge>
                       {isActive && (
-                        <Badge variant="outline" className="border-violet-500 text-violet-500 bg-violet-500/5">Active</Badge>
+                        <Badge variant="outline" className="border-primary text-primary bg-primary/5">Active</Badge>
                       )}
                     </div>
                     
@@ -276,7 +276,7 @@ function ProjectsContent() {
                   </div>
                   
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-violet-500/10 text-violet-500 rounded-lg flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                       <FolderKanban className="w-5 h-5" />
                     </div>
                     <div>
@@ -312,7 +312,7 @@ function ProjectsContent() {
                 <CardFooter className="pt-2 pb-6 px-6">
                   <Button 
                     variant={isActive ? "secondary" : "default"} 
-                    className={isActive ? "w-full" : "w-full bg-violet-600 hover:bg-violet-700"} 
+                    className={isActive ? "w-full" : "w-full "} 
                     onClick={() => handleOpenCMS(project)}
                   >
                     {isActive ? "Lanjutkan di CMS" : "Buka CMS"}
@@ -331,7 +331,7 @@ function ProjectsContent() {
           <p className="text-muted-foreground text-sm max-w-sm text-center mb-8">
             Mulai kelola konten dengan membuat proyek CMS pertama Anda di dalam organisasi.
           </p>
-          <Button onClick={() => setIsDialogOpen(true)} className="bg-violet-600 hover:bg-violet-700 text-white shadow-md">
+          <Button onClick={() => setIsDialogOpen(true)} className="">
             <Plus className="w-4 h-4 mr-2" />
             Buat Proyek Baru
           </Button>

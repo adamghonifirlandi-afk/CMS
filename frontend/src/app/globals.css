@@ -52,42 +52,61 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Enforce the Dark Theme as default */
+/* ────────────────────────────────────────────────
+   DARK THEME — Premium Navy / Teal CMS Palette
+   Surface elevation creates visual depth without shadow.
+   ──────────────────────────────────────────────── */
 :root {
-  --background: oklch(0.12 0.02 250);
-  --foreground: oklch(0.96 0.015 220);
-  --card: oklch(0.16 0.025 250);
-  --card-foreground: oklch(0.96 0.015 220);
-  --popover: oklch(0.18 0.03 250);
-  --popover-foreground: oklch(0.96 0.015 220);
-  --primary: oklch(0.78 0.15 174);
-  --primary-foreground: oklch(0.12 0.02 250);
-  --secondary: oklch(0.22 0.03 250);
-  --secondary-foreground: oklch(0.9 0.02 220);
-  --muted: oklch(0.2 0.025 250);
-  --muted-foreground: oklch(0.68 0.025 230);
-  --accent: oklch(0.24 0.04 250);
-  --accent-foreground: oklch(0.98 0.01 220);
-  --destructive: oklch(0.68 0.18 25);
-  --border: oklch(0.28 0.035 250);
-  --input: oklch(0.24 0.03 250);
-  --ring: oklch(0.78 0.15 174);
-  --chart-1: oklch(0.78 0.15 174);
-  --chart-2: oklch(0.72 0.14 220);
-  --chart-3: oklch(0.76 0.16 145);
-  --chart-4: oklch(0.8 0.16 85);
-  --chart-5: oklch(0.7 0.18 25);
+  /* ── Base surfaces (darkest → lightest) ── */
+  --background: oklch(0.13 0.018 250);
+  --foreground: oklch(0.95 0.012 220);
+
+  --card: oklch(0.165 0.022 250);
+  --card-foreground: oklch(0.95 0.012 220);
+
+  --popover: oklch(0.185 0.025 250);
+  --popover-foreground: oklch(0.95 0.012 220);
+
+  /* ── Brand accent — teal/cyan ── */
+  --primary: oklch(0.78 0.14 174);
+  --primary-foreground: oklch(0.13 0.018 250);
+
+  /* ── Neutral surfaces ── */
+  --secondary: oklch(0.21 0.025 250);
+  --secondary-foreground: oklch(0.88 0.015 220);
+
+  --muted: oklch(0.20 0.02 250);
+  --muted-foreground: oklch(0.65 0.02 230);
+
+  --accent: oklch(0.23 0.03 250);
+  --accent-foreground: oklch(0.96 0.01 220);
+
+  /* ── Semantic ── */
+  --destructive: oklch(0.65 0.2 25);
+
+  /* ── Edges ── */
+  --border: oklch(0.27 0.03 250);
+  --input: oklch(0.22 0.025 250);
+  --ring: oklch(0.78 0.14 174);
+
+  /* ── Charts ── */
+  --chart-1: oklch(0.78 0.14 174);
+  --chart-2: oklch(0.72 0.13 220);
+  --chart-3: oklch(0.74 0.15 145);
+  --chart-4: oklch(0.78 0.14 85);
+  --chart-5: oklch(0.68 0.16 25);
   
   --radius: 0.625rem;
   
-  --sidebar: oklch(0.105 0.02 250);
-  --sidebar-foreground: oklch(0.92 0.02 220);
-  --sidebar-primary: oklch(0.78 0.15 174);
-  --sidebar-primary-foreground: oklch(0.12 0.02 250);
-  --sidebar-accent: oklch(0.19 0.035 250);
-  --sidebar-accent-foreground: oklch(0.98 0.01 220);
-  --sidebar-border: oklch(0.22 0.03 250);
-  --sidebar-ring: oklch(0.78 0.15 174);
+  /* ── Sidebar — slightly darker than background ── */
+  --sidebar: oklch(0.11 0.018 250);
+  --sidebar-foreground: oklch(0.88 0.015 220);
+  --sidebar-primary: oklch(0.78 0.14 174);
+  --sidebar-primary-foreground: oklch(0.13 0.018 250);
+  --sidebar-accent: oklch(0.18 0.028 250);
+  --sidebar-accent-foreground: oklch(0.96 0.01 220);
+  --sidebar-border: oklch(0.21 0.025 250);
+  --sidebar-ring: oklch(0.78 0.14 174);
 }
 
 @layer base {
@@ -96,26 +115,50 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(circle at 78% -10%, oklch(0.28 0.08 190 / 0.14), transparent 32rem), linear-gradient(135deg, oklch(0.12 0.02 250), oklch(0.1 0.015 255));
+    background-image:
+      radial-gradient(circle at 78% -10%, oklch(0.28 0.08 190 / 0.10), transparent 32rem),
+      linear-gradient(160deg, oklch(0.13 0.018 250), oklch(0.105 0.015 255));
     min-height: 100vh;
   }
   html {
     @apply font-sans;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ── Global focus-visible ring ── */
+  :focus-visible {
+    outline: 2px solid oklch(0.78 0.14 174 / 0.5);
+    outline-offset: 2px;
   }
 }
 
 @layer utilities {
   .surface-grid {
-    background-image: linear-gradient(to right, oklch(1 0 0 / 0.035) 1px, transparent 1px), linear-gradient(to bottom, oklch(1 0 0 / 0.035) 1px, transparent 1px);
+    background-image:
+      linear-gradient(to right, oklch(1 0 0 / 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(1 0 0 / 0.03) 1px, transparent 1px);
     background-size: 32px 32px;
   }
 
   .animate-enter {
-    animation: enter 420ms ease-out both;
+    animation: enter 380ms ease-out both;
+  }
+  @keyframes enter {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  @keyframes enter {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+  /* ── Transition presets ── */
+  .transition-base {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  .transition-smooth {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 220ms;
   }
 }

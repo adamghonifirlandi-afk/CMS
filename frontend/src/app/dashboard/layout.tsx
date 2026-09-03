@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 import {
@@ -18,10 +18,8 @@ export default function DashboardLayout({
 }) {
   const { isAuthenticated, hydrate } = useAuthStore();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     hydrate();
   }, [hydrate]);
 
@@ -33,10 +31,6 @@ export default function DashboardLayout({
       }
     }
   }, [router]);
-
-  if (!mounted) {
-    return <div className="min-h-screen bg-background" />;
-  }
 
   return (
     <ActiveProjectProvider>

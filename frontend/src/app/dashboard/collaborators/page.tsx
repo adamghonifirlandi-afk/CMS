@@ -164,7 +164,7 @@ function CollaboratorsContent() {
           </Select>
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger render={<Button className="bg-violet-600 hover:bg-violet-700 text-white" disabled={!selectedOrgId} />}>
+            <DialogTrigger render={<Button className="" disabled={!selectedOrgId} />}>
 <UserPlus className="w-4 h-4 mr-2" />
                 Undang
 </DialogTrigger>
@@ -206,7 +206,7 @@ function CollaboratorsContent() {
                   <Button variant="outline" type="button" onClick={() => setIsDialogOpen(false)}>
                     Batal
                   </Button>
-                  <Button type="submit" disabled={inviting} className="bg-violet-600 hover:bg-violet-700 text-white">
+                  <Button type="submit" disabled={inviting} className="">
                     {inviting ? "Mengundang..." : "Kirim Undangan"}
                   </Button>
                 </DialogFooter>

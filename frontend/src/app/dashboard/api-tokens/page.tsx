@@ -19,10 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Copy, Key, Plus, ShieldOff } from "lucide-react";
+import { Key, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 
 interface ApiToken {
   id: string;
@@ -89,21 +88,6 @@ export default function ApiTokensPage() {
     }
   };
 
-  const handleCopy = async (token: ApiToken) => {
-    await navigator.clipboard?.writeText(newToken || `${token.tokenPrefix}_demo_token`);
-    toast.success("Token disalin ke clipboard");
-  };
-
-  const handleRevoke = async (token: ApiToken) => {
-    try {
-      await api.delete(`/api-tokens/tokens/${token.id}`);
-      setTokens((current) => current.map((item) => item.id === token.id ? { ...item, status: "REVOKED" } : item));
-      toast.success("Token berhasil dicabut");
-    } catch {
-      toast.error("Gagal mencabut token");
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -143,7 +127,7 @@ export default function ApiTokensPage() {
             />
           </div>
           <Button
-            className="self-end bg-violet-600 hover:bg-violet-700"
+            className="self-end "
             onClick={handleCreate}
             disabled={creating || !selectedOrgId}
           >
@@ -170,21 +154,17 @@ export default function ApiTokensPage() {
         <div className="grid gap-4">
           {tokens.map((token) => (
             <Card key={token.id}>
-              <CardContent className="pt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <CardContent className="pt-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Key className="w-5 h-5 text-violet-500" />
+                  <Key className="w-5 h-5 text-primary" />
                   <div>
                     <p className="font-medium">{token.name}</p>
                     <p className="text-sm text-muted-foreground">Prefix: {token.tokenPrefix}...</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={() => handleCopy(token)}><Copy className="mr-1.5 h-3.5 w-3.5" /> Copy</Button>
-                {token.status === "ACTIVE" && <ConfirmationDialog title="Revoke API token" description={`Revoke ${token.name}? Integrations using this token will stop working.`} confirmText="Revoke token" variant="destructive" onConfirm={() => handleRevoke(token)} trigger={<Button variant="destructive" size="sm"><ShieldOff className="mr-1.5 h-3.5 w-3.5" /> Revoke</Button>} />}
                 <Badge variant={token.status === "ACTIVE" ? "default" : "secondary"}>
                   {token.status}
                 </Badge>
-                </div>
               </CardContent>
             </Card>
           ))}
