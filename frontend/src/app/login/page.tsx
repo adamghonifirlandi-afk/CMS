@@ -19,6 +19,19 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const enterDemo = () => {
+    login("demo-session", {
+      id: "user_demo",
+      fullName: "Demo User",
+      email: "demo@example.com",
+      company: "Northstar Studio",
+      job: "Owner",
+      country: "Indonesia",
+    });
+    toast.success("Demo workspace ready");
+    router.push("/dashboard");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
@@ -154,6 +167,13 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
+
+          <div className="rounded-xl border border-primary/25 bg-primary/5 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div><p className="text-sm font-medium">Explore the demo workspace</p><p className="mt-1 text-xs text-muted-foreground">Use a fictional account with sample content and local interactions.</p></div>
+              <Button type="button" variant="outline" className="shrink-0 border-primary/40 text-primary hover:bg-primary/10" onClick={enterDemo}>Enter demo</Button>
+            </div>
+          </div>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
